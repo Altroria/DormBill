@@ -7,19 +7,24 @@ echo.
 
 cd /d "%~dp0backend"
 
-echo [1/3] 检查 Python 环境...
-python --version
-if errorlevel 1 (
-    echo [错误] 未检测到 Python，请先安装 Python 3.10+
-    pause
-    exit /b 1
+echo [1/3] 检查 Python 虚拟环境...
+if not exist "venv\Scripts\activate.bat" (
+    echo [提示] 虚拟环境不存在，正在创建...
+    python -m venv venv
+    if errorlevel 1 (
+        echo [错误] 未检测到 Python，请先安装 Python 3.10+
+        pause
+        exit /b 1
+    )
 )
 
 echo.
-echo [2/3] 检查依赖...
+echo [2/3] 激活虚拟环境并检查依赖...
+call venv\Scripts\activate.bat
 pip show fastapi >nul 2>&1
 if errorlevel 1 (
     echo [提示] 检测到依赖未安装，开始安装...
+    python -m pip install --upgrade pip
     pip install -r requirements.txt
 )
 

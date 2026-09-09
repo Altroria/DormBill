@@ -39,7 +39,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/DormitoryManage/RoomList.vue'),
         meta: {
           title: '房间管理',
-          icon: 'Door',
+          icon: 'Key',
         },
       },
       {
@@ -77,7 +77,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/WaterManage.vue'),
     meta: {
       title: '水费管理',
-      icon: 'Watermeloner',
+      icon: 'Drizzling',
     },
   },
   {
@@ -98,12 +98,12 @@ const router = createRouter({
 });
 
 // 路由守卫 - 动态更新页面标题
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   const title = to.meta.title as string;
   if (title) {
     document.title = `${title} - 蓉蓉的收租小工具`;
   }
-  next();
+  return true;
 });
 
 export default router;

@@ -22,7 +22,9 @@ class MeterCreate(MeterBase):
 
 
 class MeterUpdate(BaseModel):
+    previous_reading: Optional[Decimal] = None  # 允许修改上月读数(首次录入时)
     current_reading: Optional[Decimal] = None
+    ac_previous_reading: Optional[Decimal] = None  # 允许修改上月空调读数
     ac_current_reading: Optional[Decimal] = None
     electricity_price: Optional[Decimal] = None
     ac_unit_price: Optional[Decimal] = None

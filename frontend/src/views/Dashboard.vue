@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onActivated } from 'vue';
 import { WarningFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { dashboardApi } from '@/api/dashboard';
@@ -179,7 +179,10 @@ function formatMonth(s?: string) {
 }
 
 function formatMoney(v?: number) {
-  return (v ?? 0).toFixed(2);
+  if (v === null || v === undefined) return '0.00'
+  const num = typeof v === 'string' ? parseFloat(v) : v
+  if (isNaN(num)) return '0.00'
+  return num.toFixed(2)
 }
 
 function waterStatusType(s: string): 'success' | 'warning' | 'info' {
@@ -202,6 +205,7 @@ async function loadData() {
 }
 
 onMounted(loadData);
+onActivated(loadData);
 </script>
 
 <style scoped lang="scss">

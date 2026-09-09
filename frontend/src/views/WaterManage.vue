@@ -74,19 +74,19 @@
         <div class="bill-info">
           <div class="info-item">
             <span class="label">水表起始：</span>
-            <span class="value">{{ bill.meter_start?.toFixed(2) }}</span>
+            <span class="value">{{ formatNumber(bill.meter_start, 2, '-') }}</span>
           </div>
           <div class="info-item">
             <span class="label">水表截止：</span>
-            <span class="value">{{ bill.meter_end?.toFixed(2) }}</span>
+            <span class="value">{{ formatNumber(bill.meter_end, 2, '-') }}</span>
           </div>
           <div class="info-item">
             <span class="label">用水量：</span>
-            <span class="value">{{ ((bill.meter_end || 0) - (bill.meter_start || 0)).toFixed(2) }} 吨</span>
+            <span class="value">{{ formatNumber((bill.meter_end || 0) - (bill.meter_start || 0)) }} 吨</span>
           </div>
           <div class="info-item">
             <span class="label">水费金额：</span>
-            <span class="value amount">¥{{ bill.total_amount.toFixed(2) }}</span>
+            <span class="value amount">¥{{ formatNumber(bill.total_amount) }}</span>
           </div>
           <div class="info-item">
             <span class="label">状态：</span>
@@ -147,7 +147,7 @@
             <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
           </el-table>
           <div class="allocation-summary">
-            总计：¥{{ calculateTotalAllocation().toFixed(2) }}
+            总计：¥{{ formatNumber(calculateTotalAllocation()) }}
           </div>
         </div>
       </el-card>
@@ -262,7 +262,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { waterApi } from '@/api/water'
@@ -318,6 +318,14 @@ const calculateWaterUsage = () => {
     return usage >= 0 ? `${usage.toFixed(2)} 吨` : '0.00 吨'
   }
   return '-'
+}
+
+// 安全格式化数字
+const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
+  if (value === null || value === undefined || value === '') return defaultValue
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(num)) return defaultValue
+  return num.toFixed(decimals)
 }
 
 const calculateTotalAllocation = () => {
@@ -485,6 +493,10 @@ const resetForm = () => {
 
 onMounted(() => {
   fetchBuildings()
+  fetchWaterBills()
+})
+
+onActivated(() => {
   fetchWaterBills()
 })
 </script>

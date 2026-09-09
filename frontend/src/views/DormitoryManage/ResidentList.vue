@@ -360,7 +360,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Search, Plus, SwitchButton, Position } from '@element-plus/icons-vue'
 import { residenceApi } from '@/api/residence'
@@ -720,6 +720,10 @@ const resetForm = () => {
 onMounted(() => {
   fetchBuildings()
   fetchRooms()
+  fetchResidents()
+})
+
+onActivated(() => {
   fetchResidents()
 })
 </script>

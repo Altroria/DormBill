@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onActivated } from 'vue';
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
 import { Plus, Search, Edit, Delete } from '@element-plus/icons-vue';
 import { buildingApi } from '@/api/building';
@@ -160,6 +160,7 @@ async function handleDelete(row: Building) {
 }
 
 onMounted(loadData);
+onActivated(loadData);
 </script>
 
 <style scoped lang="scss">

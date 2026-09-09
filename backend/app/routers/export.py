@@ -1,6 +1,7 @@
 """Excel 导出 API"""
 from io import BytesIO
 from datetime import date
+from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -61,10 +62,11 @@ def export_settlement(
 
     bio = export_settlement_excel(items)
     filename = f"扣款表_{month}.xlsx"
+    encoded_filename = quote(filename)
     return StreamingResponse(
         BytesIO(bio),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'attachment; filename*=UTF-8\'\'{encoded_filename}'},
     )
 
 
@@ -104,10 +106,11 @@ def export_meter_detail(
 
     bio = export_meter_detail_excel(items)
     filename = f"电费明细_{month}.xlsx"
+    encoded_filename = quote(filename)
     return StreamingResponse(
         BytesIO(bio),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'attachment; filename*=UTF-8\'\'{encoded_filename}'},
     )
 
 
@@ -150,8 +153,9 @@ def export_water_detail(
 
     bio = export_water_detail_excel(items)
     filename = f"水费明细_{period}.xlsx"
+    encoded_filename = quote(filename)
     return StreamingResponse(
         BytesIO(bio),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'attachment; filename*=UTF-8\'\'{encoded_filename}'},
     )

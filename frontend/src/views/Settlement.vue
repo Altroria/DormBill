@@ -123,14 +123,14 @@
 
       <el-table-column label="应住房租" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.rent_should.toFixed(2) }}
+          ¥{{ formatNumber(row.rent_should) }}
         </template>
       </el-table-column>
 
       <el-table-column label="实扣房租" width="110" align="right">
         <template #default="{ row }">
           <span :class="{ 'edited-value': row.rent_actual !== row.rent_should }">
-            ¥{{ row.rent_actual.toFixed(2) }}
+            ¥{{ formatNumber(row.rent_actual) }}
           </span>
         </template>
       </el-table-column>
@@ -143,26 +143,26 @@
 
       <el-table-column label="普通电费" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.electricity_fee.toFixed(2) }}
+          ¥{{ formatNumber(row.electricity_fee) }}
         </template>
       </el-table-column>
 
       <el-table-column label="空调电费" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.ac_electricity_fee.toFixed(2) }}
+          ¥{{ formatNumber(row.ac_electricity_fee) }}
         </template>
       </el-table-column>
 
       <el-table-column label="水费" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.water_fee.toFixed(2) }}
+          ¥{{ formatNumber(row.water_fee) }}
         </template>
       </el-table-column>
 
       <el-table-column label="补扣-" width="110" align="right">
         <template #default="{ row }">
           <span class="deduction-minus">
-            ¥{{ row.deduction_minus.toFixed(2) }}
+            ¥{{ formatNumber(row.deduction_minus) }}
           </span>
         </template>
       </el-table-column>
@@ -170,7 +170,7 @@
       <el-table-column label="补扣+" width="110" align="right">
         <template #default="{ row }">
           <span class="deduction-plus">
-            ¥{{ row.deduction_plus.toFixed(2) }}
+            ¥{{ formatNumber(row.deduction_plus) }}
           </span>
         </template>
       </el-table-column>
@@ -178,7 +178,7 @@
       <el-table-column label="最终扣款" width="120" align="right" fixed="right">
         <template #default="{ row }">
           <span class="final-amount">
-            ¥{{ row.total_amount.toFixed(2) }}
+            ¥{{ formatNumber(row.total_amount) }}
           </span>
         </template>
       </el-table-column>
@@ -343,7 +343,7 @@
 
         <el-form-item label="预计最终扣款">
           <el-input
-            :value="`¥${calculateAdjustedAmount().toFixed(2)}`"
+            :value="`¥${formatNumber(calculateAdjustedAmount())}`"
             disabled
           />
         </el-form-item>
@@ -369,7 +369,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, DocumentAdd, Refresh, Lock, Unlock, Download } from '@element-plus/icons-vue'
 import { settlementApi } from '@/api/settlement'
@@ -438,6 +438,14 @@ const calculateAdjustedAmount = () => {
   return base - adjustForm.deduction_minus + adjustForm.deduction_plus
 }
 
+// 安全格式化数字
+const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
+  if (value === null || value === undefined || value === '') return defaultValue
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(num)) return defaultValue
+  return num.toFixed(decimals)
+}
+
 const getSummaries = (param: any) => {
   const { columns, data } = param
   const sums: any[] = []
@@ -476,7 +484,7 @@ const getSummaries = (param: any) => {
       
       if (['rent_should', 'rent_actual', 'electricity_fee', 'ac_electricity_fee', 'water_fee', 
            'deduction_minus', 'deduction_plus', 'total_amount'].includes(column.property)) {
-        sums[index] = `¥${sum.toFixed(2)}`
+        sums[index] = `¥${formatNumber(sum)}`
       } else {
         sums[index] = ''
       }
@@ -699,6 +707,10 @@ const resetAdjustForm = () => {
 
 onMounted(() => {
   fetchBuildings()
+  fetchSettlements()
+})
+
+onActivated(() => {
   fetchSettlements()
 })
 </script>

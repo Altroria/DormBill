@@ -53,12 +53,12 @@
       <el-table-column prop="ac_meter_no" label="空调电表编号" width="140" />
       <el-table-column label="默认电价" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.electricity_price.toFixed(2) }}
+          ¥{{ formatNumber(row.electricity_price) }}
         </template>
       </el-table-column>
       <el-table-column label="房租标准" width="110" align="right">
         <template #default="{ row }">
-          ¥{{ row.rent_standard.toFixed(2) }}
+          ¥{{ formatNumber(row.rent_standard) }}
         </template>
       </el-table-column>
       <el-table-column label="状态" width="80" align="center">
@@ -260,7 +260,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Search, Plus, DocumentAdd } from '@element-plus/icons-vue'
 import { roomApi } from '@/api/room'
@@ -277,6 +277,14 @@ const formRef = ref<FormInstance>()
 
 const rooms = ref<Room[]>([])
 const buildings = ref<Building[]>([])
+
+// 安全格式化数字
+const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
+  if (value === null || value === undefined || value === '') return defaultValue
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(num)) return defaultValue
+  return num.toFixed(decimals)
+}
 
 const filters = reactive({
   buildingId: undefined as number | undefined,
@@ -476,6 +484,10 @@ const resetBatchForm = () => {
 
 onMounted(() => {
   fetchBuildings()
+  fetchRooms()
+})
+
+onActivated(() => {
   fetchRooms()
 })
 </script>

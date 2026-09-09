@@ -17,6 +17,11 @@ export const meterApi = {
   calculate: (data: { month: string; ac_unit_price?: number }) =>
     post<{ message: string; count: number }>('/meters/calculate', data),
 
-  initMonth: (month: string, building_id?: number) =>
-    post<{ message: string; count: number }>(`/meters/init-month`, { month, building_id }),
+  initMonth: (params: { month: string; building_id?: number }) => {
+    const queryParams: Record<string, string> = { month: params.month };
+    if (params.building_id) {
+      queryParams.building_id = String(params.building_id);
+    }
+    return post<{ message: string; count: number }>(`/meters/init-month?${new URLSearchParams(queryParams)}`);
+  },
 };

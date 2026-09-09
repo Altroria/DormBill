@@ -71,13 +71,13 @@
       
       <el-table-column label="上月读数" width="100" align="right">
         <template #default="{ row }">
-          {{ row.previous_reading?.toFixed(2) || '0.00' }}
+          {{ formatNumber(row.previous_reading) }}
         </template>
       </el-table-column>
 
       <el-table-column label="本月读数" width="100" align="right">
         <template #default="{ row }">
-          {{ row.current_reading?.toFixed(2) || '-' }}
+          {{ formatNumber(row.current_reading, 2, '-') }}
         </template>
       </el-table-column>
 
@@ -89,25 +89,25 @@
 
       <el-table-column label="电价" width="90" align="right">
         <template #default="{ row }">
-          ¥{{ row.electricity_price?.toFixed(2) || '0.00' }}
+          ¥{{ formatNumber(row.electricity_price) }}
         </template>
       </el-table-column>
 
       <el-table-column label="普通电费" width="100" align="right">
         <template #default="{ row }">
-          ¥{{ row.total_fee?.toFixed(2) || '0.00' }}
+          ¥{{ formatNumber(row.total_fee) }}
         </template>
       </el-table-column>
 
       <el-table-column label="上月空调" width="100" align="right">
         <template #default="{ row }">
-          {{ row.ac_previous_reading?.toFixed(2) || '0.00' }}
+          {{ formatNumber(row.ac_previous_reading) }}
         </template>
       </el-table-column>
 
       <el-table-column label="本月空调" width="100" align="right">
         <template #default="{ row }">
-          {{ row.ac_current_reading?.toFixed(2) || '-' }}
+          {{ formatNumber(row.ac_current_reading, 2, '-') }}
         </template>
       </el-table-column>
 
@@ -119,13 +119,13 @@
 
       <el-table-column label="空调单价" width="100" align="right">
         <template #default="{ row }">
-          ¥{{ row.ac_unit_price?.toFixed(2) || '0.00' }}
+          ¥{{ formatNumber(row.ac_unit_price) }}
         </template>
       </el-table-column>
 
       <el-table-column label="空调电费" width="100" align="right">
         <template #default="{ row }">
-          ¥{{ row.ac_fee?.toFixed(2) || '0.00' }}
+          ¥{{ formatNumber(row.ac_fee) }}
         </template>
       </el-table-column>
 
@@ -172,11 +172,25 @@
           />
         </el-form-item>
 
-        <el-form-item label="上月普通读数">
+        <el-alert
+          v-if="isFirstTime"
+          title="首次录入提示"
+          type="warning"
+          :closable="false"
+          style="margin-bottom: 15px"
+        >
+          系统检测到上月读数为0，这可能是首次录入。请手动填写上月读数作为起始值。
+        </el-alert>
+
+        <el-form-item label="上月普通读数" prop="previous_reading">
           <el-input-number
-            :value="currentMeter?.previous_reading"
-            disabled
+            v-model="form.previous_reading"
+            :precision="2"
+            :step="1"
+            :min="0"
+            :disabled="!isFirstTime"
             style="width: 100%"
+            placeholder="首次录入时可修改"
           />
         </el-form-item>
 
@@ -193,11 +207,15 @@
 
         <el-divider />
 
-        <el-form-item label="上月空调读数">
+        <el-form-item label="上月空调读数" prop="ac_previous_reading">
           <el-input-number
-            :value="currentMeter?.ac_previous_reading"
-            disabled
+            v-model="form.ac_previous_reading"
+            :precision="2"
+            :step="1"
+            :min="0"
+            :disabled="!isFirstTime"
             style="width: 100%"
+            placeholder="首次录入时可修改"
           />
         </el-form-item>
 
@@ -284,7 +302,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { DocumentAdd, CircleCheck, Download } from '@element-plus/icons-vue'
 import { meterApi } from '@/api/meter'
@@ -308,7 +326,9 @@ const filters = reactive({
 })
 
 const form = reactive({
+  previous_reading: undefined as number | undefined,
   current_reading: undefined as number | undefined,
+  ac_previous_reading: undefined as number | undefined,
   ac_current_reading: undefined as number | undefined,
   ac_unit_price: undefined as number | undefined,
   remark: ''
@@ -317,6 +337,8 @@ const form = reactive({
 const calculateForm = reactive({
   ac_unit_price: undefined as number | undefined
 })
+
+const isFirstTime = ref(false) // 是否首次录入
 
 const rules: FormRules = {
   current_reading: [
@@ -331,6 +353,14 @@ const calculateUsage = (current: number | undefined, last: number | undefined) =
   if (current === undefined || last === undefined) return '-'
   const usage = current - last
   return usage >= 0 ? usage.toFixed(2) : '0.00'
+}
+
+// 安全格式化数字,处理字符串、null、undefined
+const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
+  if (value === null || value === undefined || value === '') return defaultValue
+  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(num)) return defaultValue
+  return num.toFixed(decimals)
 }
 
 const getStatusType = (status: string) => {
@@ -376,6 +406,13 @@ const fetchMeters = async () => {
     }
     const res = await meterApi.list(params)
     meters.value = res.items || res
+    
+    // 如果没有数据,给出提示
+    if (meters.value.length === 0) {
+      const monthStr = filters.month.substring(0, 7)
+      const buildingStr = filters.buildingId ? `${buildings.value.find(b => b.id === filters.buildingId)?.name || ''}` : '所有楼栋'
+      ElMessage.info(`${monthStr} ${buildingStr} 暂无电表数据,请先点击"初始化月度电表"`)
+    }
   } catch (error) {
     ElMessage.error('获取电表数据失败')
   } finally {
@@ -421,10 +458,17 @@ const handleInitMonth = async () => {
 
 const handleRecord = (row: MeterRecord) => {
   currentMeter.value = row
+  form.previous_reading = row.previous_reading
   form.current_reading = row.current_reading
+  form.ac_previous_reading = row.ac_previous_reading
   form.ac_current_reading = row.ac_current_reading
   form.ac_unit_price = row.ac_unit_price
   form.remark = row.remark || ''
+  
+  // 检测是否首次录入(上月读数为0)
+  isFirstTime.value = (row.previous_reading === 0 || row.previous_reading === undefined) &&
+                      (row.ac_previous_reading === 0 || row.ac_previous_reading === undefined)
+  
   dialogVisible.value = true
 }
 
@@ -435,14 +479,26 @@ const handleSubmit = async () => {
     if (valid) {
       if (!currentMeter.value) return
       
-      // Validate readings
-      if (form.current_reading! < currentMeter.value.previous_reading) {
-        ElMessage.warning('本月普通读数不能小于上月读数')
-        return
-      }
-      if (form.ac_current_reading! < currentMeter.value.ac_previous_reading) {
-        ElMessage.warning('本月空调读数不能小于上月读数')
-        return
+      // Validate readings (只在非首次录入时检查)
+      if (!isFirstTime.value) {
+        if (form.current_reading! < currentMeter.value.previous_reading) {
+          ElMessage.warning('本月普通读数不能小于上月读数')
+          return
+        }
+        if (form.ac_current_reading! < currentMeter.value.ac_previous_reading) {
+          ElMessage.warning('本月空调读数不能小于上月读数')
+          return
+        }
+      } else {
+        // 首次录入时检查本月读数不能小于手动填写的上月读数
+        if (form.previous_reading !== undefined && form.current_reading! < form.previous_reading) {
+          ElMessage.warning('本月普通读数不能小于上月读数')
+          return
+        }
+        if (form.ac_previous_reading !== undefined && form.ac_current_reading! < form.ac_previous_reading) {
+          ElMessage.warning('本月空调读数不能小于上月读数')
+          return
+        }
       }
 
       submitting.value = true
@@ -505,17 +561,25 @@ const handleExport = () => {
 
 const resetForm = () => {
   Object.assign(form, {
+    previous_reading: undefined,
     current_reading: undefined,
+    ac_previous_reading: undefined,
     ac_current_reading: undefined,
     ac_unit_price: undefined,
     remark: ''
   })
   currentMeter.value = null
+  isFirstTime.value = false
   formRef.value?.resetFields()
 }
 
 onMounted(() => {
   fetchBuildings()
+  fetchMeters()
+})
+
+// 每次组件激活时重新加载数据
+onActivated(() => {
   fetchMeters()
 })
 </script>

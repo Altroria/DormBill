@@ -101,7 +101,9 @@ def update_meter_readings(
     db: Session,
     room_id: int,
     target_month: date,
+    previous_reading: Decimal | None = None,
     current_reading: Decimal | None = None,
+    ac_previous_reading: Decimal | None = None,
     ac_current_reading: Decimal | None = None,
     electricity_price: Decimal | None = None,
     ac_unit_price: Decimal | None = None,
@@ -112,6 +114,10 @@ def update_meter_readings(
 
     abnormal = False
 
+    # 允许修改上月读数(首次录入时可能需要手动填写)
+    if previous_reading is not None:
+        record.previous_reading = previous_reading
+
     if current_reading is not None:
         record.current_reading = current_reading
         prev = to_decimal(record.previous_reading)
@@ -120,6 +126,10 @@ def update_meter_readings(
         else:
             record.total_degree = calculate_degree(prev, current_reading)
             record.total_fee = round_money(record.total_degree * to_decimal(record.electricity_price))
+
+    # 允许修改上月空调读数
+    if ac_previous_reading is not None:
+        record.ac_previous_reading = ac_previous_reading
 
     if ac_current_reading is not None:
         record.ac_current_reading = ac_current_reading

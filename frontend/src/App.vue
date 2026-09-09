@@ -23,7 +23,7 @@
               <span>楼栋管理</span>
             </el-menu-item>
             <el-menu-item index="/dormitory/rooms">
-              <el-icon><Door /></el-icon>
+              <el-icon><Key /></el-icon>
               <span>房间管理</span>
             </el-menu-item>
             <el-menu-item index="/dormitory/residents">
@@ -43,7 +43,7 @@
           </el-menu-item>
           
           <el-menu-item index="/water">
-            <el-icon><Watermeloner /></el-icon>
+            <el-icon><Drizzling /></el-icon>
             <span>水费管理</span>
           </el-menu-item>
           
@@ -57,7 +57,9 @@
       <el-main class="main-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" />
+            <keep-alive>
+              <component :is="Component" />
+            </keep-alive>
           </transition>
         </router-view>
       </el-main>

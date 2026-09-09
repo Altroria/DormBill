@@ -232,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules, type UploadInstance, type UploadFile } from 'element-plus'
 import { Search, Plus, Upload, UploadFilled } from '@element-plus/icons-vue'
 import { employeeApi } from '@/api/employee'
@@ -445,6 +445,11 @@ const resetImport = () => {
 }
 
 onMounted(() => {
+  fetchEmployees()
+})
+
+// 每次组件激活时重新加载数据
+onActivated(() => {
   fetchEmployees()
 })
 </script>
