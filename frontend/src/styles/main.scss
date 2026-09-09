@@ -1,0 +1,350 @@
+/**
+ * 全局样式文件
+ * 定义 CSS 变量和 Element Plus 主题覆盖
+ */
+
+/* CSS 变量定义 */
+:root {
+  /* 主题色 */
+  --primary: #6366F1;
+  --primary-light: #818CF8;
+  --primary-dark: #4F46E5;
+  
+  /* 状态色 */
+  --success: #10B981;
+  --success-light: #34D399;
+  --warning: #F59E0B;
+  --warning-light: #FBBF24;
+  --danger: #EF4444;
+  --danger-light: #F87171;
+  --info: #64748B;
+  
+  /* 背景色 */
+  --bg: #F8FAFC;
+  --bg-white: #FFFFFF;
+  --bg-gray: #F1F5F9;
+  
+  /* 文字颜色 */
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  
+  /* 边框颜色 */
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-md: 12px;
+  
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  
+  /* 字体 */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+}
+
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background-color: var(--bg);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-gray);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--text-secondary);
+  }
+}
+
+/* Element Plus 主题覆盖 */
+
+/* 主色覆盖 */
+.el-button--primary {
+  --el-button-bg-color: var(--primary);
+  --el-button-border-color: var(--primary);
+  --el-button-hover-bg-color: var(--primary-light);
+  --el-button-hover-border-color: var(--primary-light);
+  --el-button-active-bg-color: var(--primary-dark);
+  --el-button-active-border-color: var(--primary-dark);
+}
+
+.el-button--success {
+  --el-button-bg-color: var(--success);
+  --el-button-border-color: var(--success);
+}
+
+.el-button--warning {
+  --el-button-bg-color: var(--warning);
+  --el-button-border-color: var(--warning);
+}
+
+.el-button--danger {
+  --el-button-bg-color: var(--danger);
+  --el-button-border-color: var(--danger);
+}
+
+/* 链接样式 */
+.el-link--primary {
+  --el-link-primary-font-color: var(--primary);
+  --el-link-primary-hover-font-color: var(--primary-light);
+}
+
+/* 菜单样式 */
+.el-menu {
+  border-right: none !important;
+  
+  .el-menu-item,
+  .el-sub-menu__title {
+    &:hover {
+      background-color: var(--bg-gray) !important;
+    }
+    
+    &.is-active {
+      background-color: rgba(99, 102, 241, 0.1) !important;
+      color: var(--primary) !important;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: var(--primary);
+      }
+    }
+  }
+}
+
+/* 表格样式 */
+.el-table {
+  --el-table-border-color: var(--border);
+  --el-table-header-bg-color: var(--bg-gray);
+  --el-table-tr-bg-color: var(--bg-white);
+  
+  th.el-table__cell {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .el-table__row {
+    &:hover > td.el-table__cell {
+      background-color: var(--bg-gray) !important;
+    }
+  }
+}
+
+/* 表单样式 */
+.el-input,
+.el-select,
+.el-textarea {
+  --el-input-border-color: var(--border);
+  --el-input-hover-border-color: var(--primary);
+  --el-input-focus-border-color: var(--primary);
+}
+
+.el-form-item__label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* 卡片样式 */
+.el-card {
+  --el-card-border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* 对话框样式 */
+.el-dialog {
+  --el-dialog-border-radius: var(--radius-md);
+}
+
+/* 消息提示样式 */
+.el-message {
+  --el-message-bg-color: var(--bg-white);
+  border-radius: var(--radius);
+}
+
+/* 标签页样式 */
+.el-tabs__item {
+  color: var(--text-secondary);
+  
+  &:hover {
+    color: var(--primary);
+  }
+  
+  &.is-active {
+    color: var(--primary);
+  }
+}
+
+.el-tabs__active-bar {
+  background-color: var(--primary);
+}
+
+/* 分页样式 */
+.el-pagination {
+  --el-pagination-hover-color: var(--primary);
+}
+
+/* 标签样式 */
+.el-tag {
+  border-radius: var(--radius-sm);
+  
+  &.el-tag--primary {
+    background-color: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+  }
+  
+  &.el-tag--success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+  }
+  
+  &.el-tag--warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+  }
+  
+  &.el-tag--danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+  }
+}
+
+/* 工具类 */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.bg-white {
+  background-color: var(--bg-white);
+}
+
+.bg-gray {
+  background-color: var(--bg-gray);
+}
+
+/* 页面布局 */
+.page-container {
+  padding: var(--spacing);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing);
+  
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+/* 卡片容器 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing);
+}
+
+/* Flex 工具类 */
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap {
+  gap: var(--spacing);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
