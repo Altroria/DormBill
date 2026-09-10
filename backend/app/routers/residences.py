@@ -19,26 +19,48 @@ router = APIRouter()
 
 def _to_response_with_joins(res: ResidenceRecord, db: Session) -> ResidenceResponse:
     """转换为响应（带员工和房间信息）"""
-    data = ResidenceResponse.model_validate(res)
+    # 先构造基础字典数据，避免Pydantic验证失败
+    data_dict = {
+        "id": res.id,
+        "employee_id": res.employee_id,
+        "room_id": res.room_id,
+        "check_in_date": res.check_in_date,
+        "check_out_date": res.check_out_date,
+        "is_primary_payer": res.is_primary_payer,
+        "probation_months": res.probation_months,
+        "status": res.status,
+        "remark": res.remark,
+        "created_at": res.created_at,
+    }
+    
     emp = db.query(Employee).filter(Employee.id == res.employee_id).first()
     room = db.query(Room).filter(Room.id == res.room_id).first()
+    
     if emp:
-        data.employee_name = emp.name
-        data.employee_no = emp.employee_no
-        data.company = emp.company
-        data.department = emp.department
-        data.position = emp.position
+        data_dict.update({
+            "employee_name": emp.name,
+            "employee_no": emp.employee_no,
+            "company": emp.company,
+            "department": emp.department,
+            "position": emp.position,
+        })
+    
     if room:
         building = db.query(Building).filter(Building.id == room.building_id).first()
-        data.room_no = room.room_no
-        data.room_name = room.room_name
-        data.building_id = room.building_id
-        data.rent_standard = float(room.rent_standard) if room.rent_standard else 0
-        data.electricity_price = float(room.electricity_price) if room.electricity_price else 0
+        data_dict.update({
+            "room_no": room.room_no,
+            "room_name": room.room_name,
+            "building_id": room.building_id,
+            "rent_standard": float(room.rent_standard) if room.rent_standard else None,
+            "electricity_price": float(room.electricity_price) if room.electricity_price else None,
+        })
         if building:
-            data.building_no = building.building_no
-            data.building_name = building.name
-    return data
+            data_dict.update({
+                "building_no": building.building_no,
+                "building_name": building.name,
+            })
+    
+    return ResidenceResponse(**data_dict)
 
 
 @router.get("", response_model=ResidenceListResponse)

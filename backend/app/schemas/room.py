@@ -38,8 +38,17 @@ class RoomUpdate(BaseModel):
     remark: Optional[str] = None
 
 
-class RoomResponse(RoomBase):
+class RoomResponse(BaseModel):
     id: int
+    building_id: int
+    room_no: str
+    room_name: str
+    meter_no: Optional[str] = None
+    ac_meter_no: Optional[str] = None
+    electricity_price: Optional[Decimal] = None
+    rent_standard: Optional[Decimal] = None
+    status: str = "active"
+    remark: Optional[str] = None
     created_at: Optional[datetime] = None
     building_no: Optional[str] = None
     building_name: Optional[str] = None
