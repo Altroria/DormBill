@@ -27,9 +27,14 @@ ENV/
 backend/venv/
 backend/env/
 
-# Environment variables
+# Environment variables（保留模板文件）
+.env
 .env.local
 .env.*.local
+backend/.env
+frontend/.env
+!.env.docker
+!frontend/.env.production
 
 # IDEs
 .vscode/
@@ -76,3 +81,12 @@ htmlcov/
 *.temp
 tmp/
 temp/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Backups
+backups/
+*.sql
+!docs/init_database.sql

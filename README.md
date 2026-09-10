@@ -34,13 +34,107 @@
 
 ## 🚀 快速开始
 
-### 前置要求
+### 部署方式
+
+本项目支持两种部署方式：
+
+1. **🐳 Docker 部署（推荐）**：一键部署，无需安装依赖
+2. **📦 传统部署**：手动安装 Python、Node.js、MySQL
+
+---
+
+### 方式一：Docker 部署（推荐）⭐
+
+#### 前置要求
+
+- Docker 20.10+
+- Docker Compose 2.0+
+
+#### 快速部署
+
+**Windows (PowerShell):**
+
+```powershell
+# 1. 复制环境配置
+Copy-Item .env.docker .env
+
+# 2. 修改 .env 中的数据库密码（重要！）
+notepad .env
+
+# 3. 一键部署
+docker-compose up -d
+
+# 4. 查看服务状态
+docker-compose ps
+
+# 5. 访问系统
+# 前端: http://localhost
+# 后端文档: http://localhost:8000/docs
+```
+
+**Linux/macOS:**
+
+```bash
+# 1. 复制环境配置
+cp .env.docker .env
+
+# 2. 修改 .env 中的数据库密码（重要！）
+vim .env
+
+# 3. 一键部署
+docker-compose up -d
+
+# 4. 查看服务状态
+docker-compose ps
+
+# 5. 访问系统
+# 前端: http://localhost
+# 后端文档: http://localhost:8000/docs
+```
+
+**使用部署脚本（更简单）:**
+
+```bash
+# Windows
+.\scripts\deploy.ps1 dev
+
+# Linux/macOS
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh dev
+```
+
+#### Docker 常用命令
+
+```bash
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose stop
+
+# 重启服务
+docker-compose restart
+
+# 停止并删除容器（保留数据）
+docker-compose down
+
+# 备份数据库
+docker-compose exec mysql mysqldump -uroot -p dormbill > backup.sql
+```
+
+📖 **完整的 Docker 部署文档**: [DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md)
+
+---
+
+### 方式二：传统部署
+
+#### 前置要求
 
 - Python 3.10+
 - Node.js 16+
 - MySQL 8.0+
 
-### 1. 克隆项目
+#### 1. 克隆项目
 
 ```bash
 cd E:\cursor\DormBill
@@ -104,6 +198,61 @@ npm run dev
 
 访问：http://localhost:5173
 
+---
+
+## 🐳 Docker 架构
+
+### 容器组成
+
+```
+┌─────────────────────────────────────────┐
+│         前端容器 (Nginx)                 │
+│     http://localhost:80                 │
+│  - 提供静态文件服务                       │
+│  - 反向代理 /api 到后端                  │
+└──────────────┬──────────────────────────┘
+               │
+               ├─► /api/* ────────────────┐
+               │                          │
+┌──────────────▼──────────────────────────▼──┐
+│         后端容器 (FastAPI)                  │
+│     http://backend:8000                    │
+│  - RESTful API 服务                        │
+│  - 业务逻辑处理                             │
+└──────────────┬────────────────────────────┘
+               │
+               │ MySQL 连接
+               │
+┌──────────────▼────────────────────────────┐
+│         数据库容器 (MySQL 8.0)             │
+│     mysql:3306                            │
+│  - 持久化数据存储                          │
+│  - 数据卷: mysql_data                     │
+└───────────────────────────────────────────┘
+```
+
+### 镜像信息
+
+| 容器 | 基础镜像 | 大小（约） | 端口 |
+|------|----------|-----------|------|
+| frontend | nginx:1.25-alpine | 50 MB | 80 |
+| backend | python:3.10-slim | 350 MB | 8000 |
+| mysql | mysql:8.0 | 600 MB | 3306 |
+
+### 数据持久化
+
+- **mysql_data**: MySQL 数据目录（/var/lib/mysql）
+- 即使删除容器，数据仍然保留
+- 使用 `docker-compose down -v` 才会删除数据卷
+
+### 网络配置
+
+- 容器间通过 `dormbill-network` 桥接网络通信
+- 前端通过服务名 `backend` 访问后端
+- 后端通过服务名 `mysql` 访问数据库
+
+---
+
 ## 📁 项目结构
 
 ```
@@ -119,6 +268,8 @@ DormBill/
 │   │   ├── services/      # 业务逻辑（6个核心服务）
 │   │   └── utils/         # 工具函数（日期/金额计算）
 │   ├── requirements.txt
+│   ├── Dockerfile         # 🐳 后端 Docker 镜像
+│   ├── .dockerignore
 │   └── run.py
 ├── frontend/              # 前端 Vue3
 │   ├── src/
@@ -129,11 +280,23 @@ DormBill/
 │   │   ├── styles/       # 全局样式
 │   │   └── types/        # TypeScript 类型定义
 │   ├── package.json
-│   └── vite.config.ts
+│   ├── vite.config.ts
+│   ├── Dockerfile         # 🐳 前端 Docker 镜像
+│   ├── nginx.conf         # 🐳 Nginx 配置
+│   ├── .dockerignore
+│   └── .env.production    # 生产环境配置
 ├── docs/                  # 文档
 │   └── init_database.sql
+├── scripts/               # 部署脚本
+│   ├── deploy.sh          # Linux/macOS 部署脚本
+│   └── deploy.ps1         # Windows 部署脚本
 ├── tests/                 # 后端测试
 │   └── test_core.py      # 核心计算测试（29个测试用例）
+├── docker-compose.yml     # 🐳 Docker 编排（开发）
+├── docker-compose.prod.yml # 🐳 Docker 编排（生产）
+├── .env.docker            # 环境变量模板
+├── .dockerignore
+├── DOCKER_DEPLOY.md       # 🐳 Docker 部署完整文档
 └── README.md
 ```
 
@@ -227,14 +390,46 @@ npm run build  # 生产构建测试
 
 ## 📦 部署
 
-### 生产环境后端
+### Docker 部署（推荐）
+
+**开发环境：**
+
+```bash
+# Windows
+.\scripts\deploy.ps1 dev
+
+# Linux/macOS
+./scripts/deploy.sh dev
+```
+
+**生产环境：**
+
+```bash
+# 1. 修改 .env 中的密码和配置
+vim .env
+
+# 2. 部署
+# Windows
+.\scripts\deploy.ps1 prod
+
+# Linux/macOS
+./scripts/deploy.sh prod
+```
+
+详细文档：[DOCKER_DEPLOY.md](./DOCKER_DEPLOY.md)
+
+---
+
+### 传统部署（不使用 Docker）
+
+#### 生产环境后端
 
 ```bash
 cd backend
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-### 生产环境前端
+#### 生产环境前端
 
 ```bash
 cd frontend
@@ -242,7 +437,7 @@ npm run build
 # 将 dist/ 目录部署到 Nginx
 ```
 
-### Nginx 配置示例
+#### Nginx 配置示例
 
 ```nginx
 server {
@@ -318,6 +513,18 @@ server {
 3. **结算金额不对**：检查电费、水费是否已录入，试用期、出差等特殊状态是否正确
 
 ## 📝 版本历史
+
+### v1.1.0 (2026-09-10)
+
+🐳 Docker 部署支持
+- 完整的 Docker 容器化方案
+- docker-compose.yml（开发环境）
+- docker-compose.prod.yml（生产环境）
+- 一键部署脚本（Windows/Linux/macOS）
+- 完整的 Docker 部署文档
+- Nginx 反向代理配置
+- 健康检查和自动重启
+- 数据持久化和备份方案
 
 ### v1.0.0 (2026-09-09)
 
