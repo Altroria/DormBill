@@ -48,6 +48,7 @@
     >
       <el-table-column prop="building_no" label="楼栋编号" width="120" />
       <el-table-column prop="room_no" label="房号" width="100" />
+      <el-table-column prop="room_unit" label="室号" width="100" />
       <el-table-column prop="room_name" label="房间名称" min-width="150" />
       <el-table-column prop="meter_no" label="电表编号" width="120" />
       <el-table-column prop="ac_meter_no" label="空调电表编号" width="140" />
@@ -106,6 +107,10 @@
 
         <el-form-item label="房号" prop="room_no">
           <el-input v-model="form.room_no" placeholder="请输入房号" />
+        </el-form-item>
+
+        <el-form-item label="室号">
+          <el-input v-model="form.room_unit" placeholder="请输入室号" />
         </el-form-item>
 
         <el-form-item label="房间名称" prop="room_name">
@@ -206,6 +211,11 @@
                   <el-input v-model="row.room_no" placeholder="房号" />
                 </template>
               </el-table-column>
+              <el-table-column label="室号" width="120">
+                <template #default="{ row }">
+                  <el-input v-model="row.room_unit" placeholder="室号" />
+                </template>
+              </el-table-column>
               <el-table-column label="房间名称" width="180">
                 <template #default="{ row }">
                   <el-input v-model="row.room_name" placeholder="房间名称" />
@@ -295,6 +305,7 @@ const form = reactive({
   id: undefined as number | undefined,
   building_id: undefined as number | undefined,
   room_no: '',
+  room_unit: '',
   room_name: '',
   meter_no: '',
   ac_meter_no: '',
@@ -308,6 +319,7 @@ const batchForm = reactive({
   building_id: undefined as number | undefined,
   items: [] as Array<{
     room_no: string
+    room_unit: string
     room_name: string
     rent_standard: number
     electricity_price: number
@@ -361,6 +373,7 @@ const handleEdit = (row: Room) => {
     id: row.id,
     building_id: row.building_id,
     room_no: row.room_no,
+    room_unit: row.room_unit || '',
     room_name: row.room_name,
     meter_no: row.meter_no || '',
     ac_meter_no: row.ac_meter_no || '',
@@ -416,6 +429,7 @@ const handleDelete = async (row: Room) => {
 const addBatchRow = () => {
   batchForm.items.push({
     room_no: '',
+    room_unit: '',
     room_name: '',
     rent_standard: 0,
     electricity_price: 0.49
@@ -466,6 +480,7 @@ const resetForm = () => {
     id: undefined,
     building_id: undefined,
     room_no: '',
+    room_unit: '',
     room_name: '',
     meter_no: '',
     ac_meter_no: '',

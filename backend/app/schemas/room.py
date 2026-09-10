@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class RoomBase(BaseModel):
     building_id: int
     room_no: str = Field(..., max_length=20)
+    room_unit: Optional[str] = Field(None, max_length=20)
     room_name: str = Field(..., max_length=50)
     meter_no: Optional[str] = Field(None, max_length=50)
     ac_meter_no: Optional[str] = Field(None, max_length=50)
@@ -29,6 +30,7 @@ class RoomBatchCreate(BaseModel):
 
 class RoomUpdate(BaseModel):
     room_no: Optional[str] = None
+    room_unit: Optional[str] = None
     room_name: Optional[str] = None
     meter_no: Optional[str] = None
     ac_meter_no: Optional[str] = None
@@ -42,6 +44,7 @@ class RoomResponse(BaseModel):
     id: int
     building_id: int
     room_no: str
+    room_unit: Optional[str] = None
     room_name: str
     meter_no: Optional[str] = None
     ac_meter_no: Optional[str] = None

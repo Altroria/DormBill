@@ -82,7 +82,7 @@ def export_settlement_excel(items: List[Dict]) -> bytes:
         ws.append([
             item.get("building_no", ""),
             item.get("room_no", ""),
-            "",  # 室号（暂留空）
+            item.get("room_unit", ""),
             item.get("room_name", ""),
             item.get("company", ""),
             item.get("department", ""),

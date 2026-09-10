@@ -28,6 +28,7 @@ export interface Room {
   building_no?: string;
   building_name?: string;
   room_no: string;
+  room_unit?: string;
   room_name: string;
   meter_no?: string;
   ac_meter_no?: string;

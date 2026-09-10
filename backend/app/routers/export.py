@@ -43,6 +43,7 @@ def export_settlement(
         items.append({
             "building_no": building.building_no if building else "",
             "room_no": room.room_no if room else "",
+            "room_unit": room.room_unit if (room and hasattr(room, 'room_unit')) else "",
             "room_name": room.room_name if room else "",
             "employee_no": emp.employee_no if emp else "",
             "employee_name": emp.name if emp else "",

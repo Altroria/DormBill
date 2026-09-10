@@ -16,6 +16,7 @@ class Room(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     building_id = Column(BigInteger, ForeignKey("buildings.id"), nullable=False)
     room_no = Column(String(20), nullable=False, comment="房号")
+    room_unit = Column(String(20), nullable=True, comment="室号")
     room_name = Column(String(50), nullable=False, comment="房间名称")
     meter_no = Column(String(50), nullable=True, comment="电表编号")
     ac_meter_no = Column(String(50), nullable=True, comment="空调电表编号")
