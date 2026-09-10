@@ -102,7 +102,7 @@ def main():
         sql_statements.append("-- 注意：此SQL需要先导入员工和房间数据后才能执行")
         sql_statements.append("-- 使用子查询匹配employee_id和room_id")
         sql_statements.append("")
-        sql_statements.append("INSERT INTO residences (employee_id, room_id, check_in_date, check_out_date, status, remark)")
+        sql_statements.append("INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)")
         sql_statements.append("VALUES")
         
         insert_values = []
@@ -133,7 +133,7 @@ def main():
             remark_escaped = res['remark'].replace("'", "''") if res['remark'] else None
             remark_value = f"'{remark_escaped}'" if remark_escaped else 'NULL'
             
-            value = f"  ({employee_query}, {room_query}, '2026-07-01', NULL, 'active', {remark_value})"
+            value = f"  ({employee_query}, {room_query}, '2026-07-01', NULL, 'valid', {remark_value})"
             insert_values.append(value)
         
         sql_statements.append(',\n'.join(insert_values) + ';')
