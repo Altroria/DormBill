@@ -119,21 +119,37 @@ def generate_import_sql():
     sql_lines.append("-- ======================================")
     for room_key in sorted(rooms_dict.keys(), key=lambda x: (str(x[0]), str(x[1]))):
         room = rooms_dict[room_key]
-        # 房间类型判断
-        room_type = 'single'
-        if '隔间' in room['name'] or '客隔' in room['name']:
-            room_type = 'shared'
-        elif '双人' in room['name']:
-            room_type = 'double'
-        elif '独卫' in room['name']:
-            room_type = 'ensuite'
         
-        sql_lines.append(
-            f"INSERT INTO rooms (building_id, room_no, room_name, status, created_at, updated_at) "
-            f"SELECT b.id, '{room['room_no']}', '{room['name']}', 'active', NOW(), NOW() "
-            f"FROM buildings b WHERE b.building_no = '{room['building_no']}' "
-            f"ON DUPLICATE KEY UPDATE updated_at=NOW();"
-        )
+        # 分离房间号和备注（处理括号）
+        room_no = str(room['room_no'])
+        remark = ''
+        
+        # 提取括号内容作为备注
+        import re
+        match = re.match(r'^([^(（]+)[（(](.+)[)）]$', room_no)
+        if match:
+            room_no = match.group(1).strip()
+            remark = match.group(2).strip()
+        
+        # 确保 room_no 不超过20字符
+        if len(room_no) > 20:
+            room_no = room_no[:20]
+        
+        # 构建 SQL
+        if remark:
+            sql_lines.append(
+                f"INSERT INTO rooms (building_id, room_no, room_name, status, remark, created_at, updated_at) "
+                f"SELECT b.id, '{room_no}', '{room['name']}', 'active', '{remark}', NOW(), NOW() "
+                f"FROM buildings b WHERE b.building_no = '{room['building_no']}' "
+                f"ON DUPLICATE KEY UPDATE updated_at=NOW();"
+            )
+        else:
+            sql_lines.append(
+                f"INSERT INTO rooms (building_id, room_no, room_name, status, created_at, updated_at) "
+                f"SELECT b.id, '{room_no}', '{room['name']}', 'active', NOW(), NOW() "
+                f"FROM buildings b WHERE b.building_no = '{room['building_no']}' "
+                f"ON DUPLICATE KEY UPDATE updated_at=NOW();"
+            )
     sql_lines.append("")
     
     # 3. 插入员工数据
