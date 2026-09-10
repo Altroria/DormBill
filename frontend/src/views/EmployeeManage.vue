@@ -3,7 +3,7 @@
     <div class="toolbar">
       <el-input
         v-model="filters.search"
-        placeholder="搜索工号或姓名"
+        placeholder="搜索姓名"
         clearable
         style="width: 240px"
         @keyup.enter="fetchEmployees"
@@ -74,7 +74,6 @@
       border
       style="width: 100%"
     >
-      <el-table-column prop="employee_no" label="工号" width="120" />
       <el-table-column prop="name" label="姓名" width="120" />
       <el-table-column prop="company" label="任职单位" min-width="180" />
       <el-table-column prop="department" label="一级部门" width="140" />
@@ -119,10 +118,6 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="工号" prop="employee_no">
-          <el-input v-model="form.employee_no" placeholder="请输入工号" />
-        </el-form-item>
-
         <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name" placeholder="请输入姓名" />
         </el-form-item>
@@ -177,7 +172,7 @@
         :closable="false"
         style="margin-bottom: 20px"
       >
-        <p>Excel 文件需包含以下列：工号、姓名、任职单位、一级部门、职务、状态、备注</p>
+        <p>Excel 文件需包含以下列：姓名、任职单位、一级部门、职务、状态、备注</p>
         <p>状态列填写：在职 或 离职</p>
       </el-alert>
 
@@ -204,7 +199,6 @@
       <div v-if="importPreview.length > 0" style="margin-top: 20px">
         <el-divider content-position="left">预览数据（前10条）</el-divider>
         <el-table :data="importPreview.slice(0, 10)" border max-height="300">
-          <el-table-column prop="employee_no" label="工号" width="100" />
           <el-table-column prop="name" label="姓名" width="100" />
           <el-table-column prop="company" label="任职单位" min-width="150" />
           <el-table-column prop="department" label="一级部门" width="120" />
@@ -278,7 +272,6 @@ const form = reactive({
 })
 
 const rules: FormRules = {
-  employee_no: [{ required: true, message: '请输入工号', trigger: 'blur' }],
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
   company: [{ required: true, message: '请输入任职单位', trigger: 'blur' }],
   department: [{ required: true, message: '请输入一级部门', trigger: 'blur' }]
