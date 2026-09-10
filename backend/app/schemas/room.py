@@ -11,8 +11,8 @@ class RoomBase(BaseModel):
     room_name: str = Field(..., max_length=50)
     meter_no: Optional[str] = Field(None, max_length=50)
     ac_meter_no: Optional[str] = Field(None, max_length=50)
-    electricity_price: Decimal = Field(Decimal("0.4900"), max_digits=10, decimal_places=4)
-    rent_standard: Decimal = Field(Decimal("0.00"), max_digits=10, decimal_places=2)
+    electricity_price: Optional[Decimal] = Field(Decimal("0.4900"), max_digits=10, decimal_places=4)
+    rent_standard: Optional[Decimal] = Field(Decimal("0.00"), max_digits=10, decimal_places=2)
     status: str = "active"
     remark: Optional[str] = None
 
