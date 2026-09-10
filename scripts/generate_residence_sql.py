@@ -101,7 +101,10 @@ def main():
         sql_statements.append("-- 入住记录")
         sql_statements.append("-- 注意：此SQL需要先导入员工和房间数据后才能执行")
         sql_statements.append("-- 使用子查询匹配employee_id和room_id")
+        sql_statements.append("-- 如果子查询返回NULL，该INSERT将被忽略（使用INSERT IGNORE）")
         sql_statements.append("")
+        
+        skipped_records = []
         
         for i, res in enumerate(residences):
             # 查找employee_id - 使用姓名和公司精确匹配
@@ -130,8 +133,14 @@ def main():
             remark_escaped = res['remark'].replace("'", "''") if res['remark'] else None
             remark_value = f"'{remark_escaped}'" if remark_escaped else 'NULL'
             
-            # 每条记录生成一个独立的INSERT语句
-            insert_stmt = f"INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark) VALUES ({employee_query}, {room_query}, '2026-07-01', NULL, 'valid', {remark_value});"
+            # 使用INSERT INTO ... SELECT确保employee_id和room_id都不为NULL
+            insert_stmt = f"""INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
+SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', {remark_value}
+FROM (
+  SELECT {employee_query} as emp_id, {room_query} as room_id
+) tmp
+WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;"""
+            
             sql_statements.append(insert_stmt)
         sql_statements.append("")
         
