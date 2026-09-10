@@ -1,4 +1,4 @@
-# 使用官方 Python 3.11 镜像作为基础镜像（更新版本避免源过期）
+# 使用官方 Python 3.11 镜像作为基础镜像
 FROM python:3.11-slim
 
 # 设置工作目录
@@ -10,13 +10,8 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 安装系统依赖，忽略过期的安全更新源
-RUN apt-get update -o Acquire::Check-Valid-Until=false || apt-get update && \
-    apt-get install -y --no-install-recommends \
-    gcc \
-    default-libmysqlclient-dev \
-    pkg-config \
-    && rm -rf /var/lib/apt/lists/*
+# pymysql 是纯 Python 实现，不需要编译工具和 MySQL 开发库
+# 只保留最基本的依赖
 
 # 复制依赖文件
 COPY requirements.txt .
