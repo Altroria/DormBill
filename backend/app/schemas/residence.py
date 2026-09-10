@@ -9,8 +9,8 @@ class ResidenceBase(BaseModel):
     room_id: int
     check_in_date: date
     check_out_date: Optional[date] = None
-    is_primary_payer: int = 0
-    probation_months: int = 0
+    is_primary_payer: Optional[int] = 0
+    probation_months: Optional[int] = 0
     status: str = "valid"
     remark: Optional[str] = None
 
