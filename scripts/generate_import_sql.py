@@ -129,8 +129,8 @@ def generate_import_sql():
             room_type = 'ensuite'
         
         sql_lines.append(
-            f"INSERT INTO rooms (building_id, room_no, name, room_type, status, created_at, updated_at) "
-            f"SELECT b.id, '{room['room_no']}', '{room['name']}', '{room_type}', 'available', NOW(), NOW() "
+            f"INSERT INTO rooms (building_id, room_no, room_name, status, created_at, updated_at) "
+            f"SELECT b.id, '{room['room_no']}', '{room['name']}', 'active', NOW(), NOW() "
             f"FROM buildings b WHERE b.building_no = '{room['building_no']}' "
             f"ON DUPLICATE KEY UPDATE updated_at=NOW();"
         )
