@@ -1,6 +1,10 @@
 -- 房间数据导入SQL
 -- 此SQL会先尝试更新，如果房间不存在则插入新记录
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 247-201-1
 INSERT INTO rooms (building_id, room_no, room_unit, room_name, electricity_price, rent_standard, status)
 SELECT b.id, '201', '1', '北小单间', 0.49, 0, 'active'

@@ -1,5 +1,9 @@
 -- 房间数据更新SQL（仅更新已存在的房间）
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 UPDATE rooms r
 JOIN buildings b ON r.building_id = b.id
 SET r.room_unit = '1', r.room_name = '北小单间'
