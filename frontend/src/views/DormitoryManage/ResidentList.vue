@@ -95,8 +95,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="employee_no" label="工号" width="120" />
-      <el-table-column prop="company" label="任职单位" min-width="150" />
+      <el-table-column prop="company" label="任职单位" width="120" />
       <el-table-column prop="department" label="一级部门" width="120" />
       <el-table-column prop="position" label="职务" width="120" />
       
