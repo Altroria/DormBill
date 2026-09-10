@@ -97,15 +97,12 @@ def main():
         
         print(f"\n找到 {len(residences)} 条入住记录")
         
-        # 生成SQL INSERT语句
+        # 生成SQL INSERT语句 - 每条记录一个独立的INSERT语句
         sql_statements.append("-- 入住记录")
         sql_statements.append("-- 注意：此SQL需要先导入员工和房间数据后才能执行")
         sql_statements.append("-- 使用子查询匹配employee_id和room_id")
         sql_statements.append("")
-        sql_statements.append("INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)")
-        sql_statements.append("VALUES")
         
-        insert_values = []
         for i, res in enumerate(residences):
             # 查找employee_id - 使用姓名和公司精确匹配
             name_escaped = res['name'].replace("'", "''")
@@ -133,10 +130,9 @@ def main():
             remark_escaped = res['remark'].replace("'", "''") if res['remark'] else None
             remark_value = f"'{remark_escaped}'" if remark_escaped else 'NULL'
             
-            value = f"  ({employee_query}, {room_query}, '2026-07-01', NULL, 'valid', {remark_value})"
-            insert_values.append(value)
-        
-        sql_statements.append(',\n'.join(insert_values) + ';')
+            # 每条记录生成一个独立的INSERT语句
+            insert_stmt = f"INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark) VALUES ({employee_query}, {room_query}, '2026-07-01', NULL, 'valid', {remark_value});"
+            sql_statements.append(insert_stmt)
         sql_statements.append("")
         
         # 保存SQL文件
