@@ -22,7 +22,12 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.models.base import Base
+from app.database import Base
+# 导入所有模型以便 alembic 可以检测到它们
+from app.models import (
+    Building, Room, Employee, ResidenceRecord, MeterRecord,
+    WaterExpense, WaterAllocation, MonthlySettlement, OperationLog
+)
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
