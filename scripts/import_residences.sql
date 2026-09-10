@@ -2,6 +2,10 @@
 -- 生成时间: 2026-09-10 17:28:32
 -- 数据来源: 7月宿舍员工 扣款.xlsx
 
+-- 设置字符集
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 -- 入住记录
 -- 注意：此SQL需要先导入员工和房间数据后才能执行
 -- 使用子查询匹配employee_id和room_id
