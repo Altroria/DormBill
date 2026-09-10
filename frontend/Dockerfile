@@ -1,5 +1,5 @@
-# 构建阶段
-FROM node:18-alpine AS builder
+# 构建阶段（使用 Node.js 20 支持最新特性）
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
