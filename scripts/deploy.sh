@@ -42,10 +42,17 @@ check_docker() {
         exit 1
     fi
 
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    # 检测使用哪个 docker-compose 命令
+    if command -v docker-compose &> /dev/null; then
+        DOCKER_COMPOSE="docker-compose"
+    elif docker compose version &> /dev/null 2>&1; then
+        DOCKER_COMPOSE="docker compose"
+    else
         log_error "Docker Compose 未安装，请先安装 Docker Compose"
         exit 1
     fi
+    
+    log_info "使用 Docker Compose: $DOCKER_COMPOSE"
 }
 
 # 检查环境变量文件
@@ -65,13 +72,13 @@ deploy_dev() {
     check_env
 
     log_info "构建并启动服务..."
-    docker-compose up -d --build
+    $DOCKER_COMPOSE up -d --build
 
     log_info "等待服务启动..."
     sleep 10
 
     log_info "检查服务状态..."
-    docker-compose ps
+    $DOCKER_COMPOSE ps
 
     log_info ""
     log_info "=========================================="
@@ -82,7 +89,7 @@ deploy_dev() {
     log_info "健康检查: http://localhost:8000/health"
     log_info "=========================================="
     log_info ""
-    log_info "查看日志: docker-compose logs -f"
+    log_info "查看日志: $DOCKER_COMPOSE logs -f"
 }
 
 # 生产环境部署
@@ -103,13 +110,13 @@ deploy_prod() {
     fi
 
     log_info "构建并启动服务（生产配置）..."
-    docker-compose -f docker-compose.prod.yml up -d --build
+    $DOCKER_COMPOSE -f docker-compose.prod.yml up -d --build
 
     log_info "等待服务启动..."
     sleep 15
 
     log_info "检查服务状态..."
-    docker-compose -f docker-compose.prod.yml ps
+    $DOCKER_COMPOSE -f docker-compose.prod.yml ps
 
     log_info ""
     log_info "=========================================="
@@ -118,20 +125,21 @@ deploy_prod() {
     log_info "前端访问: http://localhost"
     log_info "=========================================="
     log_info ""
-    log_info "查看日志: docker-compose -f docker-compose.prod.yml logs -f"
+    log_info "查看日志: $DOCKER_COMPOSE -f docker-compose.prod.yml logs -f"
 }
 
 # 停止服务
 stop_services() {
     log_info "停止服务..."
+    check_docker
     
-    if docker-compose ps | grep -q "Up"; then
-        docker-compose stop
+    if $DOCKER_COMPOSE ps 2>/dev/null | grep -q "Up"; then
+        $DOCKER_COMPOSE stop
         log_info "开发环境已停止"
     fi
 
-    if docker-compose -f docker-compose.prod.yml ps 2>/dev/null | grep -q "Up"; then
-        docker-compose -f docker-compose.prod.yml stop
+    if $DOCKER_COMPOSE -f docker-compose.prod.yml ps 2>/dev/null | grep -q "Up"; then
+        $DOCKER_COMPOSE -f docker-compose.prod.yml stop
         log_info "生产环境已停止"
     fi
 
@@ -141,12 +149,13 @@ stop_services() {
 # 重启服务
 restart_services() {
     log_info "重启服务..."
+    check_docker
     
-    if docker-compose ps | grep -q "dormbill"; then
-        docker-compose restart
+    if $DOCKER_COMPOSE ps 2>/dev/null | grep -q "dormbill"; then
+        $DOCKER_COMPOSE restart
         log_info "开发环境已重启"
-    elif docker-compose -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill"; then
-        docker-compose -f docker-compose.prod.yml restart
+    elif $DOCKER_COMPOSE -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill"; then
+        $DOCKER_COMPOSE -f docker-compose.prod.yml restart
         log_info "生产环境已重启"
     else
         log_error "未找到运行中的服务"
@@ -156,10 +165,11 @@ restart_services() {
 
 # 查看日志
 view_logs() {
-    if docker-compose ps | grep -q "dormbill"; then
-        docker-compose logs -f --tail=100
-    elif docker-compose -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill"; then
-        docker-compose -f docker-compose.prod.yml logs -f --tail=100
+    check_docker
+    if $DOCKER_COMPOSE ps 2>/dev/null | grep -q "dormbill"; then
+        $DOCKER_COMPOSE logs -f --tail=100
+    elif $DOCKER_COMPOSE -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill"; then
+        $DOCKER_COMPOSE -f docker-compose.prod.yml logs -f --tail=100
     else
         log_error "未找到运行中的服务"
         exit 1
@@ -169,18 +179,19 @@ view_logs() {
 # 备份数据库
 backup_database() {
     log_info "开始备份数据库..."
+    check_docker
     
     BACKUP_DIR="backups"
     mkdir -p "$BACKUP_DIR"
     
     BACKUP_FILE="$BACKUP_DIR/dormbill_$(date +%Y%m%d_%H%M%S).sql"
     
-    if docker-compose ps | grep -q "dormbill-mysql"; then
+    if $DOCKER_COMPOSE ps 2>/dev/null | grep -q "dormbill-mysql"; then
         source .env
-        docker-compose exec -T mysql mysqldump -uroot -p"${DB_PASSWORD}" dormbill > "$BACKUP_FILE"
-    elif docker-compose -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill-mysql"; then
+        $DOCKER_COMPOSE exec -T mysql mysqldump -uroot -p"${DB_PASSWORD}" dormbill > "$BACKUP_FILE"
+    elif $DOCKER_COMPOSE -f docker-compose.prod.yml ps 2>/dev/null | grep -q "dormbill-mysql"; then
         source .env
-        docker-compose -f docker-compose.prod.yml exec -T mysql mysqldump -uroot -p"${DB_PASSWORD}" dormbill > "$BACKUP_FILE"
+        $DOCKER_COMPOSE -f docker-compose.prod.yml exec -T mysql mysqldump -uroot -p"${DB_PASSWORD}" dormbill > "$BACKUP_FILE"
     else
         log_error "MySQL 容器未运行"
         exit 1
