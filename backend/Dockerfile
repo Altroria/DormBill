@@ -1,5 +1,5 @@
-# 使用官方 Python 3.10 镜像作为基础镜像
-FROM python:3.10-slim
+# 使用官方 Python 3.11 镜像作为基础镜像（更新版本避免源过期）
+FROM python:3.11-slim
 
 # 设置工作目录
 WORKDIR /app
@@ -10,8 +10,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 安装系统依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 安装系统依赖，忽略过期的安全更新源
+RUN apt-get update -o Acquire::Check-Valid-Until=false || apt-get update && \
+    apt-get install -y --no-install-recommends \
     gcc \
     default-libmysqlclient-dev \
     pkg-config \
