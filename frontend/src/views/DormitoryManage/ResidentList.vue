@@ -82,7 +82,7 @@
       
       <el-table-column label="楼栋-房号-房间" min-width="200">
         <template #default="{ row }">
-          {{ row.building_code }} - {{ row.room_number }} - {{ row.room_name }}
+          {{ row.building_no }} - {{ row.room_no }} - {{ row.room_name }}
         </template>
       </el-table-column>
 
@@ -90,13 +90,13 @@
         <template #default="{ row }">
           <span>
             {{ row.employee_name }}
-            <el-tag v-if="row.is_primary" type="danger" size="small" effect="dark">★</el-tag>
+            <el-tag v-if="row.is_primary_payer === 1" type="danger" size="small" effect="dark">★</el-tag>
           </span>
         </template>
       </el-table-column>
 
-      <el-table-column prop="employee_code" label="工号" width="120" />
-      <el-table-column prop="organization" label="任职单位" min-width="150" />
+      <el-table-column prop="employee_no" label="工号" width="120" />
+      <el-table-column prop="company" label="任职单位" min-width="150" />
       <el-table-column prop="department" label="一级部门" width="120" />
       <el-table-column prop="position" label="职务" width="120" />
       
