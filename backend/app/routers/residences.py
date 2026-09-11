@@ -28,7 +28,7 @@ def _to_response_with_joins(res: ResidenceRecord, db: Session) -> ResidenceRespo
         "check_out_date": res.check_out_date,
         "is_primary_payer": res.is_primary_payer if res.is_primary_payer is not None else 0,
         "probation_months": res.probation_months if res.probation_months is not None else 0,
-        "status": res.status,
+        "status": res.status if res.status is not None else "valid",  # 为NULL提供默认值
         "remark": res.remark,
         "created_at": res.created_at,
     }

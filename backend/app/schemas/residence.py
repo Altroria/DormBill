@@ -11,7 +11,7 @@ class ResidenceBase(BaseModel):
     check_out_date: Optional[date] = None
     is_primary_payer: Optional[int] = 0
     probation_months: Optional[int] = 0
-    status: str = "valid"
+    status: Optional[str] = "valid"  # 允许NULL，兼容旧数据
     remark: Optional[str] = None
 
 
