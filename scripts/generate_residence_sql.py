@@ -49,7 +49,7 @@ def main():
         for row in sheet.iter_rows(min_row=3, values_only=True):
             building_no = row[0]  # 楼号
             room_no = row[1]      # 房号
-            room_suffix = row[4]  # 室号
+            room_unit = row[4]    # 室号（关键！区分同一房间的不同单元）
             room_name = row[5]    # 房间
             company = row[6]      # 任职单位
             department = row[7]   # 一级部门
@@ -77,18 +77,16 @@ def main():
                 except:
                     current_room_no = room_no_str
             
-            # 构建完整房间号
-            if current_building and current_room_no:
-                full_room_no = f"{current_building}-{current_room_no}"
-                if room_suffix:
-                    full_room_no += f"-{room_suffix}"
-                
+            # 构建完整房间号 - 必须包含室号
+            if current_building and current_room_no and room_unit:
                 residences.append({
                     'name': name,
                     'company': company,
                     'department': department,
                     'position': position,
-                    'room_no': full_room_no,
+                    'building_no': str(current_building),
+                    'room_no': str(current_room_no),
+                    'room_unit': str(room_unit),
                     'room_name': room_name,
                     'remark': remark if remark else None
                 })
@@ -116,26 +114,20 @@ def main():
                 employee_query += f" AND company = '{company_escaped}'"
             employee_query += " LIMIT 1)"
             
-            # 查找room_id - 使用building_id和room_no组合匹配
-            # 从完整房间号中提取楼栋号和房间号
-            room_parts = res['room_no'].split('-')
-            if len(room_parts) >= 2:
-                building_no = room_parts[0]
-                room_number = room_parts[1]
-                
-                # 使用building_id和room_no精确匹配
-                room_query = f"(SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '{building_no}' AND r.room_no = '{room_number}' LIMIT 1)"
-            else:
-                # 如果格式不对，使用房间名称匹配
-                room_name_escaped = res['room_name'].replace("'", "''") if res['room_name'] else ''
-                room_query = f"(SELECT id FROM rooms WHERE room_name = '{room_name_escaped}' LIMIT 1)"
+            # 查找room_id - 使用building_no、room_no和room_unit三者匹配
+            building_no = res['building_no']
+            room_number = res['room_no']
+            room_unit = res['room_unit']
+            
+            # 使用building_id、room_no和room_unit精确匹配
+            room_query = f"(SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '{building_no}' AND r.room_no = '{room_number}' AND r.room_unit = '{room_unit}' LIMIT 1)"
             
             remark_escaped = res['remark'].replace("'", "''") if res['remark'] else None
             remark_value = f"'{remark_escaped}'" if remark_escaped else 'NULL'
             
             # 使用INSERT INTO ... SELECT确保employee_id和room_id都不为NULL
             insert_stmt = f"""INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', {remark_value}
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', {remark_value}
 FROM (
   SELECT {employee_query} as emp_id, {room_query} as room_id
 ) tmp
@@ -155,7 +147,7 @@ WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;"""
         # 显示前5条记录
         print("\n前5条记录示例:")
         for res in residences[:5]:
-            print(f"  {res['name']} ({res['company']}) -> {res['room_no']} {res['room_name']}")
+            print(f"  {res['name']} ({res['company']}) -> {res['building_no']}-{res['room_no']}-{res['room_unit']} {res['room_name']}")
         
     except Exception as e:
         print(f"处理失败: {e}")

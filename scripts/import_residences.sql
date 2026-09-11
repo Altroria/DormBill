@@ -1,10 +1,6 @@
 -- 入住管理数据
--- 生成时间: 2026-09-10 17:28:32
+-- 生成时间: 2026-09-11 08:55:30
 -- 数据来源: 7月宿舍员工 扣款.xlsx
-
--- 设置字符集
-SET NAMES utf8mb4;
-SET CHARACTER SET utf8mb4;
 
 -- 入住记录
 -- 注意：此SQL需要先导入员工和房间数据后才能执行
@@ -12,734 +8,734 @@ SET CHARACTER SET utf8mb4;
 -- 如果子查询返回NULL，该INSERT将被忽略（使用INSERT IGNORE）
 
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '周可才' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '周可才' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '夫妻间'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '夫妻间'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '熊青伟' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '熊青伟' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '宫凤云' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '宫凤云' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '刘磊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '刘磊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/1 入住，前3个月不收租'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/1 入住，前3个月不收租'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '杨俊杰' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '杨俊杰' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '周红军' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '周红军' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '冯敏' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '冯敏' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '朱竹青' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '朱竹青' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '201' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙闯营' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙闯营' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈强' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈强' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '黄志雄' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '黄志雄' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李运运' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李运运' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '肖仁华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '肖仁华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '247' AND r.room_no = '202' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '宋显迪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '宋显迪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '林权' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '林权' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李东胜' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李东胜' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李克宝' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李克宝' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '程龙浩' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '程龙浩' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '欧永波' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '欧永波' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙涛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙涛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李中铭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李中铭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '杨宇' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '杨宇' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈渝' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈渝' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '董邦超' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '董邦超' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '闵晓康' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '闵晓康' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '钱纪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '钱纪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '汪文杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '汪文杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '302' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈少华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈少华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '袁世梁' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '袁世梁' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '邓涛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '邓涛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李华丹' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李华丹' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张月东' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张月东' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '夫妻间'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '夫妻间'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '王德凯' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '王德凯' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '梁凤' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '梁凤' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '248' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张聪' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张聪' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '201' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '邹建' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '201' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '邹建' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '201' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '钱瑞蕾' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '钱瑞蕾' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '殷陈陈' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '殷陈陈' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '朱宇豪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '朱宇豪' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '熊正娣' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '熊正娣' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈碧峰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈碧峰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '罗雄' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '罗雄' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张甲坤' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张甲坤' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李成鹏' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李成鹏' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '方奇锋' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '方奇锋' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈顺新' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈顺新' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陶冲' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陶冲' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '4/20 入住前三个月不收租'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '4/20 入住前三个月不收租'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '黄浩然' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '黄浩然' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/9 转宿到99弄46号'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/9 转宿到99弄46号'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '郭雅格' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '郭雅格' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '暑假工'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '暑假工'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '石昌东' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '石昌东' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '暑假工'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '暑假工'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '石永胜' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '石永胜' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李加明' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李加明' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '302' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '唐历' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '唐历' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/15 入住'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/15 入住'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张志胜' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张志胜' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/9 入住前三个月不收租'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/9 入住前三个月不收租'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '乔亚冬' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '乔亚冬' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '朱国甫' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '朱国甫' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '冯金平' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '冯金平' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙彦超' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙彦超' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '颜红良' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '颜红良' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '姚贵川' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '姚贵川' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/1 搬入'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/1 搬入'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '尹杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '尹杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '范椿泉' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '范椿泉' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '独自拉了一个大床，有家属'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '独自拉了一个大床，有家属'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '汪永进' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '汪永进' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '赵俊毫' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '赵俊毫' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '邓亭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '邓亭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '朱时雨' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '朱时雨' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '仲生荣' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '仲生荣' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '胡磊磊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '胡磊磊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '吕立永(夜班）' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '吕立永(夜班）' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '谢之兴' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '谢之兴' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '林三添' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '林三添' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙波' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙波' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '王鑫' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '王鑫' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '王浩然' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '王浩然' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '单振荡' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '单振荡' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '童朝海' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '童朝海' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7.27—8.15  水电租全免'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7.27—8.15  水电租全免'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '毛志令 ' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '毛志令 ' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '每次住半个月，水电租全免'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '每次住半个月，水电租全免'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '赵蒙凯' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '赵蒙凯' AND company = '芜湖' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '301' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '雷寿燕' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '雷寿燕' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '洪学琴' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '洪学琴' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/24  从独卫 换房间'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/24  从独卫 换房间'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '潘珏' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '潘珏' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/2 搬入'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/2 搬入'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '刘佳慧 ' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '刘佳慧 ' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '江歙凤' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '江歙凤' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '401' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙俊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙俊' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈倩倩' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈倩倩' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '冯晶琳' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '冯晶琳' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '尚歆舒' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '尚歆舒' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '刁万瑞' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '刁万瑞' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '边艳艳' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '边艳艳' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '羊蔚琛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '羊蔚琛' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '249' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '罗国庆' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '罗国庆' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '黄明' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '黄明' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '范成杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '范成杰' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '何海洋' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '何海洋' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '于乐乐' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '于乐乐' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李兴海' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李兴海' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '5/18搬入前三个月不收租'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '5/18搬入前三个月不收租'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '杨城' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '杨城' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '包康' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '包康' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '周艳龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '周艳龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '陈清水' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '陈清水' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '茹金才' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '茹金才' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/18 离宿'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/18 离宿'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '翟飞龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '翟飞龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张英华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张英华' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '姚新奥' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '姚新奥' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '方子健' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '方子健' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '6/17入住前三个月不收租'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '6/17入住前三个月不收租'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李家伟' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李家伟' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '马翔翔' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '马翔翔' AND company = '天檀' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/27 入住'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/27 入住'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '蔡第强' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '蔡第强' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/27入住'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/27入住'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '张鹏超' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '张鹏超' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '洛绒生龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '洛绒生龙' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '郭红阳' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '郭红阳' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李致远' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李致远' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '莫红震' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '莫红震' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '李飞建' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '李飞建' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '1' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7月出差中，不算水电费'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7月出差中，不算水电费'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙晨朔' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙晨朔' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '刘旭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '刘旭' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '2' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '秦孝红' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '秦孝红' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7月出差中，不算水电费'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7月出差中，不算水电费'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '薛健华' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '薛健华' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '3' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/7 离宿'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/7 离宿'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '庄荣飞' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '庄荣飞' AND company = '拓施培' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', '7/8 搬入'
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', '7/8 搬入'
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '郭雅格' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '郭雅格' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '4' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '雷志飞' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '雷志飞' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
 INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', NULL
+SELECT emp_id, room_id, '2026-07-01', NULL, '在住', NULL
 FROM (
-  SELECT (SELECT id FROM employees WHERE name = '孙洪力' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' LIMIT 1) as room_id
+  SELECT (SELECT id FROM employees WHERE name = '孙洪力' AND company = '天泽' LIMIT 1) as emp_id, (SELECT r.id FROM rooms r JOIN buildings b ON r.building_id = b.id WHERE b.building_no = '99' AND r.room_no = '402' AND r.room_unit = '5' LIMIT 1) as room_id
 ) tmp
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;
