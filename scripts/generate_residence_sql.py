@@ -134,7 +134,9 @@ FROM (
 WHERE tmp.emp_id IS NOT NULL AND tmp.room_id IS NOT NULL;"""
             
             sql_statements.append(insert_stmt)
-        sql_statements.append("")
+            sql_statements.append("")  # 每条INSERT之间添加空行
+        
+        sql_statements.append("")  # 文件末尾空行
         
         # 保存SQL文件
         output_file = 'scripts/import_residences.sql'
