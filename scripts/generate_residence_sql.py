@@ -127,7 +127,7 @@ def main():
             
             # 使用INSERT INTO ... SELECT确保employee_id和room_id都不为NULL
             insert_stmt = f"""INSERT INTO residence_records (employee_id, room_id, check_in_date, check_out_date, status, remark)
-SELECT emp_id, room_id, '2026-07-01', NULL, '在住', {remark_value}
+SELECT emp_id, room_id, '2026-07-01', NULL, 'valid', {remark_value}
 FROM (
   SELECT {employee_query} as emp_id, {room_query} as room_id
 ) tmp
