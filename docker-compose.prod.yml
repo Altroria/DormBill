@@ -20,15 +20,14 @@ services:
       - ./docs/init_database.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - dormbill-network
+    ports:
+      - "${DB_PORT:-3306}:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-    # 生产环境不暴露 MySQL 端口到宿主机
-    # ports:
-    #   - "3306:3306"
 
   # 后端 API
   backend:
