@@ -77,6 +77,17 @@
       </el-table-column>
     </el-table>
 
+    <el-pagination
+      v-model:current-page="pagination.page"
+      v-model:page-size="pagination.pageSize"
+      :total="pagination.total"
+      :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper"
+      style="margin-top: 20px; justify-content: center"
+      @size-change="fetchRooms"
+      @current-change="fetchRooms"
+    />
+
     <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -288,6 +299,12 @@ const formRef = ref<FormInstance>()
 const rooms = ref<Room[]>([])
 const buildings = ref<Building[]>([])
 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
 // 安全格式化数字
 const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
   if (value === null || value === undefined || value === '') return defaultValue
@@ -346,15 +363,19 @@ const fetchBuildings = async () => {
 const fetchRooms = async () => {
   loading.value = true
   try {
-    const params: any = {}
+    const params: any = {
+      skip: (pagination.page - 1) * pagination.pageSize,
+      limit: pagination.pageSize
+    }
     if (filters.buildingId) {
       params.building_id = filters.buildingId
     }
     if (filters.search) {
-      params.search = filters.search
+      params.keyword = filters.search
     }
     const res = await roomApi.list(params)
-    rooms.value = res.items || res
+    rooms.value = res.items || []
+    pagination.total = res.total || 0
   } catch (error) {
     ElMessage.error('获取房间列表失败')
   } finally {

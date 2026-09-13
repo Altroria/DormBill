@@ -4,6 +4,7 @@ from sqlalchemy import (
     Column, BigInteger, Date, Numeric, Enum, DateTime, Index, ForeignKey,
     UniqueConstraint, String,
 )
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from ..database import Base
 
@@ -14,7 +15,9 @@ class MeterRecord(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     room_id = Column(BigInteger, ForeignKey("rooms.id"), nullable=False)
+    building_id = Column(BigInteger, ForeignKey("buildings.id"), nullable=True, comment="楼栋ID（冗余字段）")
     month = Column(Date, nullable=False, comment="结算月份（每月1号）")
+    ac_meter_no = Column(String(50), nullable=True, comment="空调电表编号")
 
     previous_reading = Column(Numeric(12, 2), default=Decimal("0"),
                               comment="上月普通电表读数")
@@ -45,9 +48,13 @@ class MeterRecord(Base):
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # 关系
+    room = relationship("Room", backref="meter_records")
 
     __table_args__ = (
         UniqueConstraint("room_id", "month", name="uk_room_month"),
         Index("idx_month", "month"),
+        Index("idx_building_month", "building_id", "month"),
         {"comment": "电表记录"},
     )

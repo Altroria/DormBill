@@ -152,6 +152,17 @@
       </el-table-column>
     </el-table>
 
+    <el-pagination
+      v-model:current-page="pagination.page"
+      v-model:page-size="pagination.pageSize"
+      :total="pagination.total"
+      :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper"
+      style="margin-top: 20px; justify-content: center"
+      @size-change="fetchMeters"
+      @current-change="fetchMeters"
+    />
+
     <!-- 录入对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -320,6 +331,12 @@ const meters = ref<MeterRecord[]>([])
 const buildings = ref<Building[]>([])
 const currentMeter = ref<MeterRecord | null>(null)
 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
 const filters = reactive({
   month: new Date().toISOString().substring(0, 10),
   buildingId: undefined as number | undefined
@@ -399,13 +416,16 @@ const fetchMeters = async () => {
   loading.value = true
   try {
     const params: any = {
-      month: filters.month.substring(0, 7)
+      month: filters.month.substring(0, 7),
+      page: pagination.page,
+      page_size: pagination.pageSize
     }
     if (filters.buildingId) {
       params.building_id = filters.buildingId
     }
     const res = await meterApi.list(params)
-    meters.value = res.items || res
+    meters.value = res.items || []
+    pagination.total = res.total || 0
     
     // 如果没有数据,给出提示
     if (meters.value.length === 0) {

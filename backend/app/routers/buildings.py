@@ -19,6 +19,8 @@ router = APIRouter()
 def list_buildings(
     keyword: Optional[str] = Query(None, description="搜索关键词"),
     status: Optional[str] = Query(None, description="状态筛选"),
+    skip: int = Query(0, ge=0, description="跳过记录数"),
+    limit: int = Query(10, ge=1, le=100, description="每页记录数"),
     db: Session = Depends(get_db),
 ):
     """楼栋列表"""
@@ -34,11 +36,16 @@ def list_buildings(
         )
     if status:
         query = query.filter(Building.status == status)
+    
+    # 获取总数
+    total = query.count()
+    
+    # 分页查询
     query = query.order_by(Building.building_no.asc())
-    items = query.all()
+    items = query.offset(skip).limit(limit).all()
     return {
         "items": [BuildingResponse.model_validate(b) for b in items],
-        "total": len(items),
+        "total": total,
     }
 
 

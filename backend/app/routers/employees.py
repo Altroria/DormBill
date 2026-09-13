@@ -22,7 +22,7 @@ def list_employees(
     department: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=500),
+    page_size: int = Query(10, ge=1, le=500),
     db: Session = Depends(get_db),
 ):
     """员工列表"""

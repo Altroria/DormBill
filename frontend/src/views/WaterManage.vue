@@ -153,6 +153,17 @@
       </el-card>
     </div>
 
+    <el-pagination
+      v-model:current-page="pagination.page"
+      v-model:page-size="pagination.pageSize"
+      :total="pagination.total"
+      :page-sizes="[5, 10, 20, 50]"
+      layout="total, sizes, prev, pager, next, jumper"
+      style="margin-top: 20px; justify-content: center"
+      @size-change="fetchWaterBills"
+      @current-change="fetchWaterBills"
+    />
+
     <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
@@ -280,6 +291,12 @@ const waterBills = ref<WaterExpense[]>([])
 const buildings = ref<Building[]>([])
 const allocations = ref<WaterAllocation[]>([])
 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
 const filters = reactive({
   period: new Date().toISOString().substring(0, 10),
   buildingId: undefined as number | undefined
@@ -344,7 +361,10 @@ const fetchBuildings = async () => {
 const fetchWaterBills = async () => {
   loading.value = true
   try {
-    const params: any = {}
+    const params: any = {
+      page: pagination.page,
+      page_size: pagination.pageSize
+    }
     if (filters.period) {
       params.period = filters.period.substring(0, 7)
     }
@@ -352,7 +372,8 @@ const fetchWaterBills = async () => {
       params.building_id = filters.buildingId
     }
     const res = await waterApi.list(params)
-    waterBills.value = res.items
+    waterBills.value = res.items || []
+    pagination.total = res.total || 0
   } catch (error) {
     ElMessage.error('获取水费账单失败')
   } finally {

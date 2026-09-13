@@ -5,7 +5,7 @@ import { get, post, put, del } from './index';
 import type { Room, ListResponse } from '@/types';
 
 export const roomApi = {
-  list: (params?: { building_id?: number; keyword?: string; status?: string }) =>
+  list: (params?: { building_id?: number; keyword?: string; status?: string; skip?: number; limit?: number }) =>
     get<ListResponse<Room>>('/rooms', params),
 
   get: (id: number) =>

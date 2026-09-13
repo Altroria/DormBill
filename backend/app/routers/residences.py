@@ -72,6 +72,8 @@ def list_residences(
     keyword: Optional[str] = Query(None, description="姓名/工号搜索"),
     status: Optional[str] = Query(None, description="valid/invalid/business_trip/leave"),
     is_current: Optional[bool] = Query(None, description="仅看当前在住"),
+    skip: int = Query(0, ge=0, description="跳过记录数"),
+    limit: int = Query(10, ge=1, le=100, description="每页记录数"),
     db: Session = Depends(get_db),
 ):
     """入住记录列表"""
@@ -112,9 +114,13 @@ def list_residences(
             )
         )
 
-    records = query.all()
+    # 获取总数
+    total = query.count()
+    
+    # 分页查询
+    records = query.offset(skip).limit(limit).all()
     items = [_to_response_with_joins(r, db) for r in records]
-    return {"items": items, "total": len(items)}
+    return {"items": items, "total": total}
 
 
 @router.post("", response_model=ResidenceResponse)

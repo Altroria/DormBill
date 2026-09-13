@@ -29,9 +29,12 @@ def list_rooms(
     building_id: Optional[int] = Query(None, description="楼栋ID"),
     keyword: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    skip: int = Query(0, ge=0, description="跳过记录数"),
+    limit: int = Query(10, ge=1, le=100, description="每页记录数"),
     db: Session = Depends(get_db),
 ):
     """房间列表"""
+    print(f"[DEBUG] 房间列表查询参数: building_id={building_id}, keyword={keyword}, status={status}, skip={skip}, limit={limit}")
     query = db.query(Room, Building).join(
         Building, Room.building_id == Building.id
     ).filter(Room.deleted_at.is_(None))
@@ -44,12 +47,17 @@ def list_rooms(
         )
     if status:
         query = query.filter(Room.status == status)
+    
+    # 获取总数
+    total = query.count()
+    
+    # 分页查询
     query = query.order_by(
         Building.building_no.asc(), Room.room_no.asc(), Room.room_name.asc(),
     )
-    rows = query.all()
+    rows = query.offset(skip).limit(limit).all()
     items = [_to_response(r, b) for r, b in rows]
-    return {"items": items, "total": len(items)}
+    return {"items": items, "total": total}
 
 
 @router.post("", response_model=RoomResponse)

@@ -63,9 +63,18 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/meter-input',
+    name: 'MeterInput',
+    component: () => import('@/views/MeterInput.vue'),
+    meta: {
+      title: '电表录入',
+      icon: 'Edit',
+    },
+  },
+  {
     path: '/meters',
     name: 'Meters',
-    component: () => import('@/views/MeterManage.vue'),
+    component: () => import('@/views/MeterManageV2.vue'),
     meta: {
       title: '电表管理',
       icon: 'Histogram',

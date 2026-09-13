@@ -205,6 +205,17 @@
       </el-table-column>
     </el-table>
 
+    <el-pagination
+      v-model:current-page="pagination.page"
+      v-model:page-size="pagination.pageSize"
+      :total="pagination.total"
+      :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper"
+      style="margin-top: 20px; justify-content: center"
+      @size-change="fetchSettlements"
+      @current-change="fetchSettlements"
+    />
+
     <!-- 预检查对话框 -->
     <el-dialog
       v-model="showPrecheckDialog"
@@ -387,6 +398,12 @@ const settlements = ref<MonthlySettlement[]>([])
 const buildings = ref<Building[]>([])
 const currentSettlement = ref<MonthlySettlement | null>(null)
 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+})
+
 const filters = reactive({
   month: new Date().toISOString().substring(0, 10),
   buildingId: undefined as number | undefined,
@@ -514,7 +531,9 @@ const fetchSettlements = async () => {
   loading.value = true
   try {
     const params: any = {
-      month: filters.month.substring(0, 7)
+      month: filters.month.substring(0, 7),
+      page: pagination.page,
+      page_size: pagination.pageSize
     }
     if (filters.buildingId) params.building_id = filters.buildingId
     if (filters.search) params.search = filters.search
@@ -522,6 +541,7 @@ const fetchSettlements = async () => {
 
     const response = await settlementApi.list(params)
     settlements.value = response.items || []
+    pagination.total = response.total || 0
     
     // Check if month is locked
     isMonthLocked.value = settlements.value.some((s: MonthlySettlement) => s.status === 'locked')

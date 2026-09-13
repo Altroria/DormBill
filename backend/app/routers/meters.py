@@ -1,4 +1,7 @@
-"""电表 API"""
+"""电表 API（V1旧版 - 已废弃，建议使用 /meters-v2）
+
+此路由保留用于向后兼容，新功能请使用 meters_v2.py 中的接口。
+"""
 from typing import Optional
 from decimal import Decimal
 from datetime import date
@@ -22,7 +25,7 @@ from ..utils.exceptions import NotFoundError
 from ..utils.date_utils import parse_date, month_start
 
 
-router = APIRouter()
+router = APIRouter(tags=["电表管理V1（已废弃）"])
 
 
 def _to_response(m: MeterRecord, room: Room | None, building: Building | None,

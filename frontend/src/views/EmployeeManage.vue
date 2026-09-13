@@ -256,7 +256,7 @@ const filters = reactive({
 
 const pagination = reactive({
   page: 1,
-  pageSize: 20,
+  pageSize: 10,
   total: 0
 })
 
@@ -284,7 +284,7 @@ const fetchEmployees = async () => {
       page: pagination.page,
       page_size: pagination.pageSize
     }
-    if (filters.search) params.search = filters.search
+    if (filters.search) params.keyword = filters.search
     if (filters.company) params.company = filters.company
     if (filters.department) params.department = filters.department
     if (filters.status) params.status = filters.status

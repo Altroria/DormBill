@@ -33,13 +33,24 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="192" fixed="right">
           <template #default="{ row }">
             <el-button text type="primary" :icon="Edit" @click="showDialog(row)">编辑</el-button>
             <el-button text type="danger" :icon="Delete" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.pageSize"
+        :total="pagination.total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        style="margin-top: 20px; justify-content: center"
+        @size-change="loadData"
+        @current-change="loadData"
+      />
     </el-card>
 
     <el-dialog
@@ -88,6 +99,12 @@ const statusFilter = ref('');
 const loading = ref(false);
 const list = ref<Building[]>([]);
 
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  total: 0
+});
+
 const dialogVisible = ref(false);
 const submitting = ref(false);
 const formRef = ref<FormInstance>();
@@ -106,8 +123,16 @@ const rules: FormRules = {
 async function loadData() {
   loading.value = true;
   try {
-    const res = await buildingApi.list({ keyword: search.value, status: statusFilter.value });
-    list.value = res.items;
+    const params: any = {
+      skip: (pagination.page - 1) * pagination.pageSize,
+      limit: pagination.pageSize
+    };
+    if (search.value) params.keyword = search.value;
+    if (statusFilter.value) params.status = statusFilter.value;
+    
+    const res = await buildingApi.list(params);
+    list.value = res.items || [];
+    pagination.total = res.total || 0;
   } finally {
     loading.value = false;
   }

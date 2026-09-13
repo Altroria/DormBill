@@ -38,7 +38,7 @@ services:
     container_name: dormbill-backend
     restart: unless-stopped
     environment:
-      DB_HOST: mysql
+      DB_HOST: host.docker.internal
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD}
@@ -49,9 +49,8 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
     networks:
       - dormbill-network
-    depends_on:
-      mysql:
-        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
       interval: 30s

@@ -8,9 +8,11 @@ from sqlalchemy import and_
 from ..models import (
     MonthlySettlement, MeterRecord, ResidenceRecord, Room, Employee,
 )
+from ..models.room_main_meter import RoomMainMeterRecord
 from ..utils.date_utils import month_start, month_end
 from ..utils.decimal_utils import to_decimal, round_money
 from .electricity_service import distribute_electricity_fee
+from .electricity_calculation_service import ElectricityCalculationService
 from .rent_service import (
     calculate_rent_actual_with_overrides,
     calculate_final_amount,
@@ -68,6 +70,7 @@ def generate_settlement(
     db: Session,
     target_month: date,
     force: bool = False,
+    use_v2: bool = True,
 ) -> List[MonthlySettlement]:
     """
     生成月度结算
@@ -76,6 +79,9 @@ def generate_settlement(
     1. 获取当月有效入住员工
     2. 获取房租标准、电表读数、个人电费、个人水费
     3. 写入/更新 settlement
+    
+    Args:
+        use_v2: 是否使用V2电表计算（总表-空调表分离架构）
     """
     target_month = month_start(target_month)
 
@@ -89,27 +95,58 @@ def generate_settlement(
     if locked and not force:
         raise ValueError(f"{target_month} 月份已锁定，请先解锁")
 
-    # 获取当月所有电表记录（用于按房间查找员工电费）
-    meter_records = db.query(MeterRecord).filter(
-        MeterRecord.month == target_month
-    ).all()
-    meter_by_room = {m.room_id: m for m in meter_records}
-
-    # 计算每个房间的电费分摊
-    elec_distribution: Dict[int, List] = {}  # room_id -> [(employee_id, elec, ac)]
-    for m in meter_records:
-        elec_distribution[m.room_id] = distribute_electricity_fee(
-            db, m, target_month,
-        )
-
     # 收集员工电费映射
     elec_by_emp: Dict[int, Dict] = {}
-    for room_id, dists in elec_distribution.items():
-        for emp_id, elec, ac in dists:
-            if emp_id not in elec_by_emp:
-                elec_by_emp[emp_id] = {"electricity_fee": Decimal("0"), "ac_electricity_fee": Decimal("0")}
-            elec_by_emp[emp_id]["electricity_fee"] += to_decimal(elec)
-            elec_by_emp[emp_id]["ac_electricity_fee"] += to_decimal(ac)
+    
+    if use_v2:
+        # V2架构：从ElectricityCalculationService获取分摊结果
+        calc_service = ElectricityCalculationService(db)
+        
+        # 获取所有房号总表
+        main_meters = db.query(RoomMainMeterRecord).filter(
+            RoomMainMeterRecord.month == target_month
+        ).all()
+        
+        for main_meter in main_meters:
+            # 计算该房号的电费分摊
+            distributions = calc_service.calculate_room_electricity(
+                building_id=main_meter.building_id,
+                room_no=main_meter.room_no,
+                month=target_month,
+            )
+            
+            # 汇总到员工
+            for dist in distributions:
+                emp_id = dist['employee_id']
+                if emp_id not in elec_by_emp:
+                    elec_by_emp[emp_id] = {
+                        "electricity_fee": Decimal("0"),
+                        "ac_electricity_fee": Decimal("0")
+                    }
+                # V2架构中，公共电费作为普通电费，空调费单独
+                elec_by_emp[emp_id]["electricity_fee"] += to_decimal(dist['common_electricity_fee'])
+                elec_by_emp[emp_id]["ac_electricity_fee"] += to_decimal(dist['ac_electricity_fee'])
+    else:
+        # V1架构：使用旧的按套间分摊逻辑
+        meter_records = db.query(MeterRecord).filter(
+            MeterRecord.month == target_month
+        ).all()
+        
+        elec_distribution: Dict[int, List] = {}
+        for m in meter_records:
+            elec_distribution[m.room_id] = distribute_electricity_fee(
+                db, m, target_month,
+            )
+        
+        for room_id, dists in elec_distribution.items():
+            for emp_id, elec, ac in dists:
+                if emp_id not in elec_by_emp:
+                    elec_by_emp[emp_id] = {
+                        "electricity_fee": Decimal("0"),
+                        "ac_electricity_fee": Decimal("0")
+                    }
+                elec_by_emp[emp_id]["electricity_fee"] += to_decimal(elec)
+                elec_by_emp[emp_id]["ac_electricity_fee"] += to_decimal(ac)
 
     # 收集所有有效入住的员工
     residences = db.query(ResidenceRecord).filter(
