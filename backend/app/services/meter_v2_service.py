@@ -198,6 +198,7 @@ class MeterV2Service:
                 room_ac_records.append({
                     "room_id": rec.room_id,
                     "room_unit": rec.room.room_unit if rec.room else None,
+                    "room_name": rec.room.room_name if rec.room else None,
                     "ac_meter_no": rec.ac_meter_no,
                     "ac_previous_reading": float(rec.ac_previous_reading or 0),
                     "ac_current_reading": float(rec.ac_current_reading or 0),
@@ -236,10 +237,12 @@ class MeterV2Service:
         room_no: str,
         month: date,
         current_reading: Optional[Decimal] = None,
+        total_degree: Optional[Decimal] = None,
+        total_fee: Optional[Decimal] = None,
         meter_no: Optional[str] = None,
         remark: Optional[str] = None,
     ) -> RoomMainMeterRecord:
-        """更新房号总表读数"""
+        """更新房号总表读数（支持手动输入用电量和总电费）"""
         # 查找或创建记录
         record = (
             self.db.query(RoomMainMeterRecord)
@@ -278,9 +281,60 @@ class MeterV2Service:
             if remark is not None:
                 record.remark = remark
         
-        # 计算用电量和费用
-        record.total_degree = record.current_reading - record.previous_reading
-        record.total_fee = record.total_degree * record.electricity_price
+        # 计算用电量和费用（支持手动输入）
+        # 关键：前端不手动输入时应发送 null，而不是 0
+        print(f"[DEBUG] total_degree={total_degree}, total_fee={total_fee}")
+        
+        # 判断是否为手动输入：值不为None且大于0
+        is_manual_degree = total_degree is not None and total_degree > 0
+        is_manual_fee = total_fee is not None and total_fee > 0
+        
+        if is_manual_degree and is_manual_fee:
+            print(f"[DEBUG] 进入分支1: 手动输入模式（用电量和总电费都由用户输入）")
+            # 手动输入模式：用电量和总电费都由用户输入，反算电价
+            record.total_degree = total_degree
+            record.total_fee = total_fee
+            
+            # 反算电价
+            calculated_price = total_fee / total_degree
+            record.electricity_price = calculated_price
+            
+            # 电价合理性验证（0.3-1.0元/度）
+            if calculated_price < Decimal("0.3") or calculated_price > Decimal("1.0"):
+                # 记录警告到remark
+                warning = f"[警告] 电价异常: {float(calculated_price):.4f}元/度"
+                if record.remark:
+                    record.remark = f"{record.remark} | {warning}"
+                else:
+                    record.remark = warning
+            
+            # 级联更新该房号下所有空调表的电价
+            self._update_ac_meters_price(building_id, room_no, month, calculated_price)
+        
+        elif is_manual_degree:
+            print(f"[DEBUG] 进入分支2: 仅手动输入用电量")
+            # 仅手动输入用电量，按现有电价计算费用
+            record.total_degree = total_degree
+            record.total_fee = total_degree * record.electricity_price
+        
+        elif is_manual_fee:
+            print(f"[DEBUG] 进入分支3: 仅手动输入总电费")
+            # 仅手动输入总电费，按读数计算用电量，反算电价
+            record.total_degree = record.current_reading - record.previous_reading
+            record.total_fee = total_fee
+            if record.total_degree > 0:
+                record.electricity_price = total_fee / record.total_degree
+                self._update_ac_meters_price(building_id, room_no, month, record.electricity_price)
+        
+        else:
+            print(f"[DEBUG] 进入分支4: 自动计算模式")
+            # 自动计算模式（默认）
+            print(f"[DEBUG] current_reading: {record.current_reading}")
+            print(f"[DEBUG] previous_reading: {record.previous_reading}")
+            record.total_degree = record.current_reading - record.previous_reading
+            record.total_fee = record.total_degree * record.electricity_price
+            print(f"[DEBUG] 计算后 total_degree: {record.total_degree}")
+            print(f"[DEBUG] 计算后 total_fee: {record.total_fee}")
         
         if record.current_reading > record.previous_reading:
             record.status = "recorded"
@@ -419,3 +473,56 @@ class MeterV2Service:
         )
         
         return record.ac_current_reading if record else Decimal("0")
+    
+    def _update_ac_meters_price(
+        self,
+        building_id: int,
+        room_no: str,
+        month: date,
+        new_price: Decimal,
+    ) -> int:
+        """
+        更新房号下所有空调表的电价并重新计算费用
+        
+        当总表的电价发生变化时，级联更新该房号下所有空调表
+        """
+        # 查询该房号下所有房间
+        rooms = (
+            self.db.query(Room)
+            .filter(
+                and_(
+                    Room.building_id == building_id,
+                    Room.room_no == room_no,
+                )
+            )
+            .all()
+        )
+        
+        room_ids = [r.id for r in rooms]
+        if not room_ids:
+            return 0
+        
+        # 查询并更新所有空调表
+        ac_records = (
+            self.db.query(MeterRecord)
+            .filter(
+                and_(
+                    MeterRecord.room_id.in_(room_ids),
+                    MeterRecord.month == month,
+                )
+            )
+            .all()
+        )
+        
+        updated_count = 0
+        for ac_record in ac_records:
+            # 更新电价
+            ac_record.electricity_price = new_price
+            # 重新计算空调电费
+            ac_record.ac_fee = ac_record.ac_degree * new_price
+            updated_count += 1
+        
+        if updated_count > 0:
+            self.db.flush()
+        
+        return updated_count

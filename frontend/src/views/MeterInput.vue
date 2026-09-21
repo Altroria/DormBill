@@ -145,29 +145,55 @@
                       :step="1"
                       :min="room.main_previous_reading"
                       style="width: 100%"
-                      @change="onMainMeterChange(room)"
+                      @change="onMainReadingChange(room)"
                     />
                   </el-form-item>
                 </el-col>
                 <el-col :span="6">
                   <el-form-item label="用电量">
-                    <el-input
-                      :value="calculateMainDegree(room).toFixed(2)"
-                      disabled
-                      suffix-icon="Lightning"
-                    >
-                      <template #suffix>度</template>
-                    </el-input>
+                    <el-input-number
+                      v-model="room.main_total_degree"
+                      :precision="2"
+                      :step="1"
+                      :min="0"
+                      style="width: 100%"
+                      @change="onMainDegreeChange(room)"
+                    />
+                    <el-text size="small" type="info">度（可修改）</el-text>
                   </el-form-item>
                 </el-col>
                 <el-col :span="6">
                   <el-form-item label="总电费">
-                    <el-input
-                      :value="calculateMainFee(room).toFixed(2)"
+                    <el-input-number
+                      v-model="room.main_total_fee"
+                      :precision="2"
+                      :step="1"
+                      :min="0"
+                      style="width: 100%"
+                      @change="onMainFeeChange(room)"
+                    />
+                    <el-text size="small" type="info">元（必填）</el-text>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              
+              <!-- 电价显示 -->
+              <el-row :gutter="20">
+                <el-col :span="6" :offset="12">
+                  <el-form-item label="计算电价">
+                    <el-input 
+                      :value="calculatePrice(room).toFixed(4)" 
                       disabled
                     >
-                      <template #suffix>元</template>
+                      <template #suffix>元/度</template>
                     </el-input>
+                    <el-text 
+                      v-if="isPriceAbnormal(room)" 
+                      size="small" 
+                      type="warning"
+                    >
+                      ⚠️ 电价异常，请检查（合理范围: 0.3-1.0元/度）
+                    </el-text>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -184,12 +210,15 @@
               stripe
               style="width: 100%"
             >
-              <el-table-column label="套间" width="150" align="center">
+              <el-table-column label="套间" width="80" align="center">
                 <template #default="{ row }">
-                  <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <el-text size="small" style="font-weight: 500;">{{ row.room_name || '-' }}</el-text>
-                    <el-tag size="small">{{ row.room_unit || '-' }}</el-tag>
-                  </div>
+                  <el-tag size="small">{{ row.room_unit || '-' }}</el-tag>
+                </template>
+              </el-table-column>
+
+              <el-table-column label="房间名" width="120" align="center">
+                <template #default="{ row }">
+                  <el-text size="small" style="font-weight: 500;">{{ row.room_name || '-' }}</el-text>
                 </template>
               </el-table-column>
               
@@ -227,14 +256,14 @@
               </el-table-column>
               
               <el-table-column label="空调电费" width="120" align="right">
-                <template #default="{ row }">
-                  ¥{{ calculateAcFee(row).toFixed(2) }}
+                <template #default="{ row, $index }">
+                  ¥{{ calculateAcFee(row, room).toFixed(2) }}
                 </template>
               </el-table-column>
               
               <el-table-column label="人均空调费" align="right">
-                <template #default="{ row }">
-                  ¥{{ (row.occupants > 0 ? calculateAcFee(row) / row.occupants : 0).toFixed(2) }}
+                <template #default="{ row, $index }">
+                  ¥{{ (row.occupants > 0 ? calculateAcFee(row, room) / row.occupants : 0).toFixed(2) }}
                 </template>
               </el-table-column>
             </el-table>
@@ -311,6 +340,8 @@ const filterForm = reactive({
 
 // 变更跟踪
 const changesMap = ref(new Map<string, boolean>())
+// 手动输入字段追踪 - 追踪哪些字段是用户手动输入的
+const manualInputMap = ref(new Map<string, Set<string>>())
 
 // 计算属性
 const hasChanges = computed(() => changesMap.value.size > 0)
@@ -407,14 +438,53 @@ const loadData = async () => {
   }
 }
 
-// 计算总表用电量
-const calculateMainDegree = (room: EnhancedMeterListItem) => {
-  return Math.max(0, room.main_current_reading - room.main_previous_reading)
+// 计算电价
+const calculatePrice = (room: EnhancedMeterListItem) => {
+  if (room.main_total_degree > 0) {
+    return room.main_total_fee / room.main_total_degree
+  }
+  return 0.49 // 默认值
 }
 
-// 计算总表电费 (0.49元/度)
-const calculateMainFee = (room: EnhancedMeterListItem) => {
-  return calculateMainDegree(room) * 0.49
+// 判断电价是否异常
+const isPriceAbnormal = (room: EnhancedMeterListItem) => {
+  const price = calculatePrice(room)
+  return price < 0.3 || price > 1.0
+}
+
+// 本月读数变更（自动计算用电量）
+const onMainReadingChange = (room: EnhancedMeterListItem) => {
+  room.main_total_degree = Math.max(0, room.main_current_reading - room.main_previous_reading)
+  const key = `${room.building_id}-${room.room_no}`
+  changesMap.value.set(key, true)
+  // 本月读数变更时，清除用电量和总电费的手动输入标记（因为是自动计算的）
+  const manualFields = manualInputMap.value.get(key)
+  if (manualFields) {
+    manualFields.delete('main_total_degree')
+    manualFields.delete('main_total_fee')
+  }
+}
+
+// 用电量手动变更
+const onMainDegreeChange = (room: EnhancedMeterListItem) => {
+  const key = `${room.building_id}-${room.room_no}`
+  changesMap.value.set(key, true)
+  // 标记用电量为手动输入
+  if (!manualInputMap.value.has(key)) {
+    manualInputMap.value.set(key, new Set())
+  }
+  manualInputMap.value.get(key)!.add('main_total_degree')
+}
+
+// 总电费变更
+const onMainFeeChange = (room: EnhancedMeterListItem) => {
+  const key = `${room.building_id}-${room.room_no}`
+  changesMap.value.set(key, true)
+  // 标记总电费为手动输入
+  if (!manualInputMap.value.has(key)) {
+    manualInputMap.value.set(key, new Set())
+  }
+  manualInputMap.value.get(key)!.add('main_total_fee')
 }
 
 // 计算空调用电量
@@ -422,15 +492,12 @@ const calculateAcDegree = (acMeter: any) => {
   return Math.max(0, acMeter.ac_current_reading - acMeter.ac_previous_reading)
 }
 
-// 计算空调电费 (0.49元/度)
-const calculateAcFee = (acMeter: any) => {
-  return calculateAcDegree(acMeter) * 0.49
-}
-
-// 总表读数变更
-const onMainMeterChange = (room: EnhancedMeterListItem) => {
-  const key = `${room.building_id}-${room.room_no}`
-  changesMap.value.set(key, true)
+// 计算空调电费（使用房号的实际电价）
+const calculateAcFee = (acMeter: any, room?: EnhancedMeterListItem) => {
+  const degree = calculateAcDegree(acMeter)
+  // 使用房号的实际电价（从总表用电量和总电费反算）
+  const price = room ? calculatePrice(room) : 0.49
+  return degree * price
 }
 
 // 空调表读数变更
@@ -467,10 +534,16 @@ const batchSave = async () => {
     for (const room of meterData.value) {
       const key = `${room.building_id}-${room.room_no}`
       if (changesMap.value.has(key)) {
+        // 获取该房号的手动输入字段
+        const manualFields = manualInputMap.value.get(key) || new Set()
+        
         updates.push({
           building_id: room.building_id,
           room_no: room.room_no,
           main_current_reading: room.main_current_reading,
+          // 只有手动输入时才发送，否则发送 undefined（会被序列化为 null）
+          main_total_degree: manualFields.has('main_total_degree') ? room.main_total_degree : undefined,
+          main_total_fee: manualFields.has('main_total_fee') ? room.main_total_fee : undefined,
           main_meter_no: undefined,
           ac_meters: room.ac_meters.map(ac => ({
             room_id: ac.room_id,
@@ -488,6 +561,7 @@ const batchSave = async () => {
 
     ElMessage.success(response.message)
     changesMap.value.clear()
+    manualInputMap.value.clear()
 
     // 重新加载数据
     await loadData()

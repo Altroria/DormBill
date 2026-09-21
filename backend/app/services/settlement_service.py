@@ -111,11 +111,12 @@ def generate_settlement(
         
         for main_meter in main_meters:
             # 计算该房号的电费分摊
-            distributions = calc_service.calculate_room_electricity(
+            result = calc_service.calculate_room_no_electricity(
                 building_id=main_meter.building_id,
                 room_no=main_meter.room_no,
                 month=target_month,
             )
+            distributions = result['distributions']
             
             # 汇总到员工
             for dist in distributions:
@@ -297,11 +298,12 @@ def calculate_realtime_settlements(
     for main_meter in main_meters:
         try:
             # 计算该房号的电费分摊
-            distributions = calc_service.calculate_room_electricity(
+            result = calc_service.calculate_room_no_electricity(
                 building_id=main_meter.building_id,
                 room_no=main_meter.room_no,
                 month=target_month,
             )
+            distributions = result['distributions']
             
             # 汇总到员工
             for dist in distributions:

@@ -9,6 +9,7 @@ class AcMeterInfo(BaseModel):
     """空调表信息"""
     room_id: int
     room_unit: Optional[str] = None
+    room_name: Optional[str] = None
     ac_meter_no: Optional[str] = None
     ac_previous_reading: float
     ac_current_reading: float
@@ -46,6 +47,8 @@ class CombinedMeterListResponse(BaseModel):
 class MainMeterUpdateRequest(BaseModel):
     """总表更新请求"""
     current_reading: Optional[Decimal] = None
+    total_degree: Optional[Decimal] = Field(None, description="用电量（可手动输入）")
+    total_fee: Optional[Decimal] = Field(None, description="总电费（手动输入）")
     meter_no: Optional[str] = None
     remark: Optional[str] = None
 
@@ -92,6 +95,8 @@ class RoomNoBatchUpdateItem(BaseModel):
     building_id: int
     room_no: str
     main_current_reading: Decimal
+    main_total_degree: Optional[Decimal] = Field(None, description="用电量（手动输入）")
+    main_total_fee: Optional[Decimal] = Field(None, description="总电费（手动输入）")
     main_meter_no: Optional[str] = None
     ac_meters: List[AcMeterBatchUpdateItem]
 

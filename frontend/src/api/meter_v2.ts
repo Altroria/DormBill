@@ -59,6 +59,8 @@ export interface InitMonthResponse {
 export interface RoomMainMeterUpdateRequest {
   previous_reading?: number
   current_reading?: number
+  total_degree?: number  // 新增：手动输入用电量
+  total_fee?: number     // 新增：手动输入总电费
   electricity_price?: number
   meter_no?: string
   remark?: string
@@ -81,6 +83,8 @@ export interface RoomNoBatchUpdateItem {
   building_id: number
   room_no: string
   main_current_reading: number
+  main_total_degree?: number   // 新增：手动输入用电量
+  main_total_fee?: number      // 新增：手动输入总电费
   main_meter_no?: string
   ac_meters: AcMeterBatchUpdateItem[]
 }

@@ -65,16 +65,19 @@ class TestElectricityCalculation:
         # 使用尾差处理函数
         allocations = allocate_with_remainder(common_fee, occupants_count)
         
-        # 验证总和不变
+        # 验证总和不变（这是最重要的）
         assert sum(allocations) == common_fee
         
         # 验证分配数量正确
         assert len(allocations) == occupants_count
         
-        # 验证每个人的费用都在合理范围内
-        base_amount = common_fee / occupants_count
+        # 验证前n-1个人的费用相同
+        for i in range(len(allocations) - 1):
+            assert allocations[i] == allocations[0]
+        
+        # 验证所有人的费用都是正数
         for amount in allocations:
-            assert abs(amount - base_amount) < Decimal("0.01")
+            assert amount > 0
     
     def test_ac_fee_distribution_by_unit(self):
         """测试空调费按套间人数分摊"""

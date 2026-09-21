@@ -96,6 +96,8 @@ def update_main_meter(
         room_no=room_no,
         month=month_date,
         current_reading=data.current_reading,
+        total_degree=data.total_degree,
+        total_fee=data.total_fee,
         meter_no=data.meter_no,
         remark=data.remark,
     )
@@ -110,6 +112,7 @@ def update_main_meter(
         "current_reading": float(record.current_reading),
         "total_degree": float(record.total_degree),
         "total_fee": float(record.total_fee),
+        "electricity_price": float(record.electricity_price),
         "status": record.status,
         "remark": record.remark,
     }
@@ -221,6 +224,8 @@ def batch_update_meters(
             room_no=room_update.room_no,
             month=month_date,
             current_reading=room_update.main_current_reading,
+            total_degree=room_update.main_total_degree,
+            total_fee=room_update.main_total_fee,
             meter_no=room_update.main_meter_no,
         )
         main_meters_updated += 1
