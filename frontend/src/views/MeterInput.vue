@@ -28,10 +28,23 @@
             />
           </el-select>
         </el-form-item>
+
+        <el-form-item label="房号">
+          <el-input
+            v-model="filterForm.roomNo"
+            placeholder="模糊搜索"
+            clearable
+            style="width: 120px"
+            @keyup.enter="loadData"
+          />
+        </el-form-item>
         
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="loadData">
-            加载数据
+            查询
+          </el-button>
+          <el-button type="info" :loading="initializing" @click="initMonth">
+            初始化月份
           </el-button>
           <el-button
             type="success"
@@ -40,7 +53,7 @@
             :disabled="!hasChanges"
             @click="batchSave"
           >
-            批量保存 {{ changedCount > 0 ? `(${changedCount})` : '' }}
+            批量保存{{ changedCount > 0 ? ` (${changedCount})` : '' }}
           </el-button>
           <el-button
             type="warning"
@@ -55,8 +68,24 @@
 
     <!-- 数据加载状态 -->
     <el-card v-loading="loading" class="content-card" shadow="never">
-      <template v-if="!loading && meterData.length === 0">
-        <el-empty description="暂无数据，请选择月份和楼栋后加载" />
+      <template v-if="!loading && meterData.length === 0 && hasSearched">
+        <el-empty description="暂无数据">
+          <template #description>
+            <div style="margin-bottom: 16px; color: #909399;">
+              当前筛选条件下没有电表记录
+            </div>
+            <div style="margin-bottom: 16px; color: #606266;">
+              如果是新月份，请先点击"初始化月份"按钮创建电表记录
+            </div>
+            <el-button type="primary" :loading="initializing" @click="initMonth">
+              立即初始化
+            </el-button>
+          </template>
+        </el-empty>
+      </template>
+      
+      <template v-if="!loading && !hasSearched">
+        <el-empty description="请选择月份和楼栋，然后点击查询按钮加载数据" />
       </template>
 
       <!-- 按房号分组的折叠面板 -->
@@ -264,6 +293,8 @@ import { buildingApi } from '@/api/building'
 const loading = ref(false)
 const saving = ref(false)
 const calculating = ref(false)
+const initializing = ref(false)
+const hasSearched = ref(false)
 const buildings = ref<Building[]>([])
 const meterData = ref<EnhancedMeterListItem[]>([])
 const activeRooms = ref<string[]>([])
@@ -272,6 +303,7 @@ const activeRooms = ref<string[]>([])
 const filterForm = reactive({
   month: '',
   buildingId: undefined as number | undefined,
+  roomNo: '',
 })
 
 // 变更跟踪
@@ -291,6 +323,48 @@ const loadBuildings = async () => {
   }
 }
 
+// 初始化月份
+const initMonth = async () => {
+  if (!filterForm.month) {
+    ElMessage.warning('请选择月份')
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要初始化 ${filterForm.month} 的电表记录吗？` +
+      (filterForm.buildingId ? '（仅选中的楼栋）' : '（所有楼栋）') +
+      '\n\n初始化后会自动创建所有房号的电表记录，并带出上月读数。',
+      '确认初始化',
+      { 
+        type: 'info',
+        confirmButtonText: '确定初始化',
+        cancelButtonText: '取消'
+      }
+    )
+
+    initializing.value = true
+
+    const response = await meterV2Api.initMonth({
+      month: filterForm.month,
+      building_id: filterForm.buildingId,
+    })
+
+    ElMessage.success(
+      `初始化成功！创建了 ${response.main_meter_count} 个房号总表和 ${response.ac_meter_count} 个空调表记录`
+    )
+
+    // 自动加载数据
+    await loadData()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '初始化失败')
+    }
+  } finally {
+    initializing.value = false
+  }
+}
+
 // 加载电表数据
 const loadData = async () => {
   if (!filterForm.month) {
@@ -299,6 +373,7 @@ const loadData = async () => {
   }
 
   loading.value = true
+  hasSearched.value = true
   changesMap.value.clear()
 
   try {
@@ -309,9 +384,19 @@ const loadData = async () => {
       limit: 500,
     })
 
-    meterData.value = response.items
+    // 前端房号过滤
+    let items = response.items
+    if (filterForm.roomNo) {
+      items = items.filter(item => item.room_no.includes(filterForm.roomNo))
+    }
 
-    ElMessage.success(`加载成功，共 ${response.items.length} 个房号`)
+    meterData.value = items
+
+    if (items.length === 0) {
+      ElMessage.info('没有找到符合条件的数据')
+    } else {
+      ElMessage.success(`加载成功，共 ${items.length} 个房号`)
+    }
   } catch (error: any) {
     ElMessage.error(error.message || '加载数据失败')
   } finally {

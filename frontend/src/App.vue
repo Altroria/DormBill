@@ -37,11 +37,6 @@
             <span>员工管理</span>
           </el-menu-item>
           
-          <el-menu-item index="/meter-input">
-            <el-icon><Edit /></el-icon>
-            <span>电表录入</span>
-          </el-menu-item>
-          
           <el-menu-item index="/meters">
             <el-icon><Histogram /></el-icon>
             <span>电表管理</span>

@@ -3,12 +3,13 @@ from decimal import Decimal
 from datetime import date
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 
 from ..models.meter import MeterRecord
 from ..models.room_main_meter import RoomMainMeterRecord
 from ..models.room import Room
 from ..models.building import Building
+from ..models.residence import ResidenceRecord
 
 
 class MeterV2Service:
@@ -174,9 +175,27 @@ class MeterV2Service:
                 .all()
             )
             
-            # 构建空调表数据
-            room_ac_records = [
-                {
+            # 构建空调表数据（包含入住人数）
+            room_ac_records = []
+            for rec in ac_records:
+                # 查询该套间在当月的入住人数
+                occupants_count = (
+                    self.db.query(ResidenceRecord)
+                    .filter(
+                        and_(
+                            ResidenceRecord.room_id == rec.room_id,
+                            ResidenceRecord.check_in_date <= main_record.month,
+                            or_(
+                                ResidenceRecord.check_out_date.is_(None),
+                                ResidenceRecord.check_out_date >= main_record.month,
+                            ),
+                            ResidenceRecord.status == "valid",
+                        )
+                    )
+                    .count()
+                )
+                
+                room_ac_records.append({
                     "room_id": rec.room_id,
                     "room_unit": rec.room.room_unit if rec.room else None,
                     "ac_meter_no": rec.ac_meter_no,
@@ -184,9 +203,8 @@ class MeterV2Service:
                     "ac_current_reading": float(rec.ac_current_reading or 0),
                     "ac_degree": float(rec.ac_degree or 0),
                     "ac_fee": float(rec.ac_fee or 0),
-                }
-                for rec in ac_records
-            ]
+                    "occupants": occupants_count,
+                })
             
             combined_items.append({
                 "building_id": main_record.building_id,

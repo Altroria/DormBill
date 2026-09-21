@@ -14,6 +14,7 @@ class AcMeterInfo(BaseModel):
     ac_current_reading: float
     ac_degree: float
     ac_fee: float
+    occupants: int = 0
 
 
 class CombinedMeterItem(BaseModel):
@@ -130,6 +131,9 @@ class EnhancedMeterListItem(BaseModel):
     building_no: Optional[str] = None
     room_no: str
     month: date
+    # 总表读数
+    main_previous_reading: float
+    main_current_reading: float
     # 总表数据
     main_total_degree: float
     main_total_fee: float

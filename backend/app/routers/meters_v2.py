@@ -441,6 +441,8 @@ def get_enhanced_meter_list(
             "building_no": building.building_no if building else None,
             "room_no": main_meter.room_no,
             "month": main_meter.month,
+            "main_previous_reading": float(main_meter.previous_reading),
+            "main_current_reading": float(main_meter.current_reading),
             "main_total_degree": float(main_meter.total_degree),
             "main_total_fee": float(main_meter.total_fee),
             "common_degree": float(main_meter.common_degree),
