@@ -428,6 +428,7 @@ def get_enhanced_meter_list(
             ac_meters_info.append({
                 "room_id": ac_meter.room_id,
                 "room_unit": room.room_unit if room else None,
+                "room_name": room.room_name if room else None,
                 "ac_meter_no": ac_meter.ac_meter_no,
                 "ac_previous_reading": float(ac_meter.ac_previous_reading),
                 "ac_current_reading": float(ac_meter.ac_current_reading),

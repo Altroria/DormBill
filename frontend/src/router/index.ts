@@ -67,7 +67,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Meters',
     component: () => import('@/views/MeterInput.vue'),
     meta: {
-      title: '电表管理',
+      title: '电费管理',
       icon: 'Histogram',
     },
   },

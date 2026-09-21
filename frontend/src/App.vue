@@ -39,7 +39,7 @@
           
           <el-menu-item index="/meters">
             <el-icon><Histogram /></el-icon>
-            <span>电表管理</span>
+            <span>电费管理</span>
           </el-menu-item>
           
           <el-menu-item index="/water">

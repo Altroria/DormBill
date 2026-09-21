@@ -50,8 +50,6 @@
       <el-table-column prop="room_no" label="房号" width="100" />
       <el-table-column prop="room_unit" label="室号" width="100" />
       <el-table-column prop="room_name" label="房间名称" min-width="150" />
-      <el-table-column prop="meter_no" label="电表编号" width="120" />
-      <el-table-column prop="ac_meter_no" label="空调电表编号" width="140" />
       <el-table-column label="默认电价" width="110" align="right">
         <template #default="{ row }">
           ¥{{ formatNumber(row.electricity_price) }}
@@ -126,14 +124,6 @@
 
         <el-form-item label="房间名称" prop="room_name">
           <el-input v-model="form.room_name" placeholder="请输入房间名称" />
-        </el-form-item>
-
-        <el-form-item label="电表编号">
-          <el-input v-model="form.meter_no" placeholder="请输入电表编号" />
-        </el-form-item>
-
-        <el-form-item label="空调电表编号">
-          <el-input v-model="form.ac_meter_no" placeholder="请输入空调电表编号" />
         </el-form-item>
 
         <el-form-item label="默认电价" prop="electricity_price">
@@ -324,8 +314,6 @@ const form = reactive({
   room_no: '',
   room_unit: '',
   room_name: '',
-  meter_no: '',
-  ac_meter_no: '',
   electricity_price: 0.49,
   rent_standard: 0,
   status: 'active' as 'active' | 'inactive',
@@ -396,8 +384,6 @@ const handleEdit = (row: Room) => {
     room_no: row.room_no,
     room_unit: row.room_unit || '',
     room_name: row.room_name,
-    meter_no: row.meter_no || '',
-    ac_meter_no: row.ac_meter_no || '',
     electricity_price: row.electricity_price,
     rent_standard: row.rent_standard,
     status: row.status,
@@ -503,8 +489,6 @@ const resetForm = () => {
     room_no: '',
     room_unit: '',
     room_name: '',
-    meter_no: '',
-    ac_meter_no: '',
     electricity_price: 0.49,
     rent_standard: 0,
     status: 'active',

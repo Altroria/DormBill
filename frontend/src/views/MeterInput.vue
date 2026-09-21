@@ -184,9 +184,12 @@
               stripe
               style="width: 100%"
             >
-              <el-table-column label="套间" width="80" align="center">
+              <el-table-column label="套间" width="150" align="center">
                 <template #default="{ row }">
-                  <el-tag size="small">{{ row.room_unit || '-' }}</el-tag>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <el-text size="small" style="font-weight: 500;">{{ row.room_name || '-' }}</el-text>
+                    <el-tag size="small">{{ row.room_unit || '-' }}</el-tag>
+                  </div>
                 </template>
               </el-table-column>
               

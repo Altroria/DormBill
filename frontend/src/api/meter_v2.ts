@@ -115,6 +115,7 @@ export interface EnhancedCalculateResponse {
 export interface AcMeterInfo {
   room_id: number
   room_unit?: string
+  room_name?: string
   ac_meter_no?: string
   ac_previous_reading: number
   ac_current_reading: number
