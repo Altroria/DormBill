@@ -16,7 +16,7 @@ from ..schemas.settlement import (
 )
 from ..services.settlement_service import (
     precheck_settlement, generate_settlement, lock_month, unlock_month,
-    recalculate_settlement,
+    recalculate_settlement, calculate_realtime_settlements,
 )
 from ..utils.exceptions import NotFoundError, BusinessError
 from ..utils.date_utils import parse_date, month_start
@@ -61,30 +61,30 @@ def list_settlements(
     building_id: Optional[int] = Query(None),
     keyword: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    water_mode: str = Query("double", description="水费模式: single=单月, double=双月"),
     db: Session = Depends(get_db),
 ):
-    """月度结算列表"""
+    """月度结算列表（实时计算）"""
     target_month = month_start(parse_date(month + "-01"))
-    query = db.query(MonthlySettlement).filter(MonthlySettlement.month == target_month)
-    if status:
-        query = query.filter(MonthlySettlement.status == status)
+    
+    # 验证 water_mode
+    if water_mode not in ["single", "double"]:
+        water_mode = "double"
+    
+    # 实时计算结算数据
+    settlements = calculate_realtime_settlements(db, target_month, water_mode)
+    
+    # 应用过滤条件
     if building_id:
-        query = query.filter(MonthlySettlement.room_id.in_(
-            db.query(Room.id).filter(Room.building_id == building_id)
-        ))
+        settlements = [s for s in settlements if s.get("building_id") == building_id]
+    
     if keyword:
-        emp_ids = [
-            e.id for e in db.query(Employee).filter(
-                Employee.name.like(f"%{keyword}%"),
-            ).all()
-        ]
-        if emp_ids:
-            query = query.filter(MonthlySettlement.employee_id.in_(emp_ids))
-        else:
-            query = query.filter(MonthlySettlement.id == -1)
-    rows = query.order_by(MonthlySettlement.id.asc()).all()
-    items = [_to_response(s, db) for s in rows]
-    return {"items": items, "total": len(items)}
+        settlements = [s for s in settlements if keyword in s.get("employee_name", "")]
+    
+    if status:
+        settlements = [s for s in settlements if s.get("status") == status]
+    
+    return {"items": settlements, "total": len(settlements)}
 
 
 @router.post("/precheck", response_model=PrecheckResponse)
@@ -102,7 +102,7 @@ def precheck(data: SettlementGenerateRequest, db: Session = Depends(get_db)):
 def generate(data: SettlementGenerateRequest, db: Session = Depends(get_db)):
     """生成月度结算"""
     target_month = month_start(parse_date(data.month))
-    settlements = generate_settlement(db, target_month, force=data.force)
+    settlements = generate_settlement(db, target_month, force=data.force, water_mode=data.water_mode)
     db.commit()
     for s in settlements:
         db.refresh(s)
@@ -114,7 +114,7 @@ def generate(data: SettlementGenerateRequest, db: Session = Depends(get_db)):
 def recalculate(data: SettlementGenerateRequest, db: Session = Depends(get_db)):
     """重新计算"""
     target_month = month_start(parse_date(data.month))
-    settlements = recalculate_settlement(db, target_month)
+    settlements = recalculate_settlement(db, target_month, data.water_mode)
     db.commit()
     for s in settlements:
         db.refresh(s)

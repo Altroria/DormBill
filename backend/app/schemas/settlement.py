@@ -57,6 +57,7 @@ class SettlementGenerateRequest(BaseModel):
     """生成结算请求"""
     month: date
     force: bool = False  # 强制覆盖已生成
+    water_mode: str = "double"  # 水费模式: single=单月, double=双月
 
 
 class PrecheckItem(BaseModel):

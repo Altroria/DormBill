@@ -183,39 +183,77 @@ def rebalance_water_allocations(
     return allocs
 
 
+def get_employee_water_fee_for_month_v2(
+    db: Session,
+    employee_id: int,
+    target_month: date,
+    include_previous_month: bool = True,
+) -> Decimal:
+    """
+    获取员工在指定月份应承担的水费（支持单月/双月选择）
+    
+    Args:
+        employee_id: 员工ID
+        target_month: 目标月份
+        include_previous_month: 是否包含上月水费
+            - True: 计算上月+本月（双月模式，默认）
+            - False: 仅计算本月（单月模式）
+    
+    Returns:
+        水费总额
+        
+    示例：
+        target_month = 2024-10-01
+        include_previous_month = True  → 查找9月和10月的水费账单
+        include_previous_month = False → 仅查找10月的水费账单
+    """
+    month1 = month_start(target_month)
+    
+    if include_previous_month:
+        # 双月模式：上月+本月
+        month0 = month_start(add_months(target_month, -1))
+        target_months = [month0, month1]
+    else:
+        # 单月模式：仅本月
+        target_months = [month1]
+    
+    total = Decimal("0")
+    
+    for month in target_months:
+        # 查找该月的水费账单（period_start 和 period_end 都是该月）
+        expenses = db.query(WaterExpense).filter(
+            and_(
+                WaterExpense.status.in_(["allocated", "settled"]),
+                WaterExpense.period_start == month,
+                WaterExpense.period_end == month,
+            )
+        ).all()
+        
+        for exp in expenses:
+            alloc = db.query(WaterAllocation).filter(
+                and_(
+                    WaterAllocation.water_expense_id == exp.id,
+                    WaterAllocation.employee_id == employee_id,
+                )
+            ).first()
+            if alloc:
+                total += to_decimal(alloc.amount)
+    
+    return round_money(total)
+
+
 def get_employee_water_fee_for_month(
     db: Session,
     employee_id: int,
     target_month: date,
 ) -> Decimal:
     """
-    获取员工在指定月份应承担的水费
+    获取员工在指定月份应承担的水费（旧版接口，默认双月模式）
 
     - 查找覆盖该月的水费周期
     - 返回该员工在该周期内的分摊金额
     """
-    month1 = month_start(target_month)
-    month2 = month_end(target_month)
-
-    expenses = db.query(WaterExpense).filter(
-        and_(
-            WaterExpense.status.in_(["allocated", "settled"]),
-            WaterExpense.period_start <= month2,
-            WaterExpense.period_end >= month1,
-        )
-    ).all()
-
-    total = Decimal("0")
-    for exp in expenses:
-        alloc = db.query(WaterAllocation).filter(
-            and_(
-                WaterAllocation.water_expense_id == exp.id,
-                WaterAllocation.employee_id == employee_id,
-            )
-        ).first()
-        if alloc:
-            total += to_decimal(alloc.amount)
-    return round_money(total)
+    return get_employee_water_fee_for_month_v2(db, employee_id, target_month, True)
 
 
 __all__ = [
@@ -224,4 +262,5 @@ __all__ = [
     "update_water_allocation_amount",
     "rebalance_water_allocations",
     "get_employee_water_fee_for_month",
+    "get_employee_water_fee_for_month_v2",
 ]

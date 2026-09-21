@@ -10,15 +10,18 @@ export const settlementApi = {
     building_id?: number;
     keyword?: string;
     status?: string;
+    water_mode?: 'single' | 'double';
+    page?: number;
+    page_size?: number;
   }) => get<ListResponse<MonthlySettlement>>('/settlements', params),
 
   precheck: (data: { month: string }) =>
     post<PrecheckResponse>('/settlements/precheck', data),
 
-  generate: (data: { month: string; force?: boolean }) =>
+  generate: (data: { month: string; force?: boolean; water_mode?: string }) =>
     post<ListResponse<MonthlySettlement>>('/settlements/generate', data),
 
-  recalculate: (data: { month: string }) =>
+  recalculate: (data: { month: string; water_mode?: string }) =>
     post<ListResponse<MonthlySettlement>>('/settlements/recalculate', data),
 
   update: (id: number, data: Partial<MonthlySettlement>) =>

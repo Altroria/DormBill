@@ -26,11 +26,23 @@
         />
       </el-select>
 
+      <!-- 水费周期选择 -->
+      <el-select
+        v-model="filters.waterMode"
+        placeholder="水费周期"
+        style="width: 140px"
+        @change="fetchSettlements"
+      >
+        <el-option label="双月水费" value="double" />
+        <el-option label="单月水费" value="single" />
+      </el-select>
+
       <el-input
         v-model="filters.search"
         placeholder="搜索员工姓名"
         clearable
         style="width: 200px"
+        @clear="fetchSettlements"
         @keyup.enter="fetchSettlements"
       >
         <template #prefix>
@@ -38,53 +50,65 @@
         </template>
       </el-input>
 
-      <el-select
-        v-model="filters.status"
-        placeholder="状态"
-        clearable
-        style="width: 120px"
-        @change="fetchSettlements"
-      >
-        <el-option label="草稿" value="draft" />
-        <el-option label="已生成" value="generated" />
-        <el-option label="已锁定" value="locked" />
-      </el-select>
+      <el-button type="primary" @click="fetchSettlements">
+        <el-icon><Search /></el-icon>
+        查询
+      </el-button>
 
       <div style="flex: 1"></div>
 
-      <el-button type="primary" @click="handleGenerate">
-        <el-icon><DocumentAdd /></el-icon>
-        生成结算
-      </el-button>
-
-      <el-button type="success" @click="handleRecalculate">
-        <el-icon><Refresh /></el-icon>
-        重新计算
+      <el-button type="success" @click="handleExport">
+        <el-icon><Download /></el-icon>
+        导出Excel
       </el-button>
 
       <el-button 
+        v-if="!isMonthLocked" 
         type="warning" 
         @click="handleLock"
-        :disabled="isMonthLocked"
       >
         <el-icon><Lock /></el-icon>
         锁定月份
       </el-button>
-
+      
       <el-button 
+        v-else 
         type="info" 
         @click="handleUnlock"
-        :disabled="!isMonthLocked"
       >
         <el-icon><Unlock /></el-icon>
-        解锁
-      </el-button>
-
-      <el-button type="warning" @click="handleExport">
-        <el-icon><Download /></el-icon>
-        导出Excel
+        解锁月份
       </el-button>
     </div>
+
+    <el-alert
+      v-if="filters.waterMode === 'double'"
+      title="💡 实时查询 - 双月水费模式"
+      type="info"
+      :closable="false"
+      show-icon
+      style="margin-bottom: 16px"
+    >
+      <div>
+        水费按双月计算：上月+本月（例如：10月结算 = 9月水费 + 10月水费）
+      </div>
+    </el-alert>
+    
+    <el-alert
+      v-if="filters.waterMode === 'single'"
+      title="💡 实时查询 - 单月水费模式"
+      type="warning"
+      :closable="false"
+      show-icon
+      style="margin-bottom: 16px"
+    >
+      <div>
+        水费仅计算当月（例如：10月结算 = 10月水费）
+      </div>
+      <div style="margin-top: 8px; font-size: 12px; color: #606266;">
+        💡 切换水费模式或筛选条件后，点击"查询"按钮刷新数据
+      </div>
+    </el-alert>
 
     <el-alert
       v-if="isMonthLocked"
@@ -184,276 +208,42 @@
       </el-table-column>
 
       <el-table-column label="状态" width="90" align="center" fixed="right">
-        <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)">
-            {{ getStatusLabel(row.status) }}
-          </el-tag>
+        <template #default>
+          <el-tag type="info">实时</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" width="100" fixed="right" align="center">
-        <template #default="{ row }">
-          <el-button 
-            link 
-            type="primary" 
-            @click="handleAdjust(row)"
-            :disabled="isMonthLocked"
-          >
-            调整
-          </el-button>
-        </template>
-      </el-table-column>
     </el-table>
 
-    <el-pagination
-      v-model:current-page="pagination.page"
-      v-model:page-size="pagination.pageSize"
-      :total="pagination.total"
-      :page-sizes="[10, 20, 50, 100]"
-      layout="total, sizes, prev, pager, next, jumper"
-      style="margin-top: 20px; justify-content: center"
-      @size-change="fetchSettlements"
-      @current-change="fetchSettlements"
+    <el-empty 
+      v-if="!loading && settlements.length === 0" 
+      description="暂无数据"
+      style="margin: 40px 0"
     />
-
-    <!-- 预检查对话框 -->
-    <el-dialog
-      v-model="showPrecheckDialog"
-      title="结算预检查"
-      width="700px"
-    >
-      <el-alert
-        v-if="precheckResult.blocking_issues?.length > 0"
-        title="阻断项"
-        type="error"
-        :closable="false"
-        style="margin-bottom: 16px"
-      >
-        <ul>
-          <li v-for="(issue, index) in precheckResult.blocking_issues" :key="index">
-            {{ issue }}
-          </li>
-        </ul>
-      </el-alert>
-
-      <el-alert
-        v-if="precheckResult.warnings?.length > 0"
-        title="警告项"
-        type="warning"
-        :closable="false"
-        style="margin-bottom: 16px"
-      >
-        <ul>
-          <li v-for="(warning, index) in precheckResult.warnings" :key="index">
-            {{ warning }}
-          </li>
-        </ul>
-      </el-alert>
-
-      <el-alert
-        v-if="!precheckResult.blocking_issues?.length && !precheckResult.warnings?.length"
-        title="检查通过"
-        type="success"
-        :closable="false"
-      >
-        所有检查项通过，可以生成结算数据。
-      </el-alert>
-
-      <template #footer>
-        <el-button @click="showPrecheckDialog = false">取消</el-button>
-        <el-button 
-          type="primary" 
-          :loading="generating"
-          :disabled="precheckResult.blocking_issues?.length > 0"
-          @click="confirmGenerate"
-        >
-          确认生成
-        </el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 调整对话框 -->
-    <el-dialog
-      v-model="showAdjustDialog"
-      title="调整结算数据"
-      width="600px"
-      @close="resetAdjustForm"
-    >
-      <el-form
-        ref="adjustFormRef"
-        :model="adjustForm"
-        label-width="120px"
-      >
-        <el-form-item label="员工信息">
-          <el-input
-            :value="`${currentSettlement?.employee_no} - ${currentSettlement?.employee_name}`"
-            disabled
-          />
-        </el-form-item>
-
-        <el-form-item label="房间信息">
-          <el-input
-            :value="`${currentSettlement?.building_no} - ${currentSettlement?.room_no} - ${currentSettlement?.room_name}`"
-            disabled
-          />
-        </el-form-item>
-
-        <el-divider />
-
-        <el-form-item label="应住房租">
-          <el-input-number
-            :value="currentSettlement?.rent_should"
-            disabled
-            :precision="2"
-            style="width: 100%"
-          />
-        </el-form-item>
-
-        <el-form-item label="实扣房租">
-          <el-input-number
-            v-model="adjustForm.rent_actual"
-            :precision="2"
-            :step="10"
-            :min="0"
-            style="width: 100%"
-          />
-          <div style="font-size: 12px; color: #909399; margin-top: 4px">
-            可以根据实际情况调整实际扣款的房租金额
-          </div>
-        </el-form-item>
-
-        <el-divider />
-
-        <el-form-item label="补扣-">
-          <el-input-number
-            v-model="adjustForm.deduction_minus"
-            :precision="2"
-            :step="10"
-            :min="0"
-            style="width: 100%"
-          />
-          <div style="font-size: 12px; color: #909399; margin-top: 4px">
-            需要减免的金额（如优惠、补偿等）
-          </div>
-        </el-form-item>
-
-        <el-form-item label="补扣+">
-          <el-input-number
-            v-model="adjustForm.deduction_plus"
-            :precision="2"
-            :step="10"
-            :min="0"
-            style="width: 100%"
-          />
-          <div style="font-size: 12px; color: #909399; margin-top: 4px">
-            需要额外扣除的金额（如罚款、补缴等）
-          </div>
-        </el-form-item>
-
-        <el-divider />
-
-        <el-form-item label="预计最终扣款">
-          <el-input
-            :value="`¥${formatNumber(calculateAdjustedAmount())}`"
-            disabled
-          />
-        </el-form-item>
-
-        <el-form-item label="备注">
-          <el-input
-            v-model="adjustForm.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入调整原因"
-          />
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <el-button @click="showAdjustDialog = false">取消</el-button>
-        <el-button type="primary" :loading="adjusting" @click="handleSubmitAdjust">
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onActivated } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, DocumentAdd, Refresh, Lock, Unlock, Download } from '@element-plus/icons-vue'
+import { Search, Lock, Unlock, Download } from '@element-plus/icons-vue'
 import { settlementApi } from '@/api/settlement'
 import { buildingApi } from '@/api/building'
 import type { MonthlySettlement, Building } from '@/types'
 
 const loading = ref(false)
-const generating = ref(false)
-const adjusting = ref(false)
-const showPrecheckDialog = ref(false)
-const showAdjustDialog = ref(false)
 const isMonthLocked = ref(false)
 
 const settlements = ref<MonthlySettlement[]>([])
 const buildings = ref<Building[]>([])
-const currentSettlement = ref<MonthlySettlement | null>(null)
-
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
-  total: 0
-})
 
 const filters = reactive({
   month: new Date().toISOString().substring(0, 10),
   buildingId: undefined as number | undefined,
   search: '',
-  status: ''
+  waterMode: 'double' as 'single' | 'double'
 })
 
-const precheckResult = reactive<{
-  blocking_issues: string[]
-  warnings: string[]
-}>({
-  blocking_issues: [],
-  warnings: []
-})
-
-const adjustForm = reactive({
-  rent_actual: 0,
-  deduction_minus: 0,
-  deduction_plus: 0,
-  remark: ''
-})
-
-const getStatusType = (status: string) => {
-  const map: Record<string, any> = {
-    draft: 'info',
-    generated: 'primary',
-    locked: 'success'
-  }
-  return map[status] || 'info'
-}
-
-const getStatusLabel = (status: string) => {
-  const map: Record<string, string> = {
-    draft: '草稿',
-    generated: '已生成',
-    locked: '已锁定'
-  }
-  return map[status] || status
-}
-
-const calculateAdjustedAmount = () => {
-  if (!currentSettlement.value) return 0
-  
-  const base = adjustForm.rent_actual +
-    currentSettlement.value.electricity_fee +
-    currentSettlement.value.ac_electricity_fee +
-    currentSettlement.value.water_fee
-  
-  return base - adjustForm.deduction_minus + adjustForm.deduction_plus
-}
 
 // 安全格式化数字
 const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '0.00'): string => {
@@ -532,16 +322,13 @@ const fetchSettlements = async () => {
   try {
     const params: any = {
       month: filters.month.substring(0, 7),
-      page: pagination.page,
-      page_size: pagination.pageSize
+      water_mode: filters.waterMode,
     }
     if (filters.buildingId) params.building_id = filters.buildingId
-    if (filters.search) params.search = filters.search
-    if (filters.status) params.status = filters.status
+    if (filters.search) params.keyword = filters.search
 
     const response = await settlementApi.list(params)
     settlements.value = response.items || []
-    pagination.total = response.total || 0
     
     // Check if month is locked
     isMonthLocked.value = settlements.value.some((s: MonthlySettlement) => s.status === 'locked')
@@ -552,70 +339,8 @@ const fetchSettlements = async () => {
   }
 }
 
-const handleGenerate = async () => {
-  if (!filters.month) {
-    ElMessage.warning('请选择月份')
-    return
-  }
-
-  // Run precheck first
-  try {
-    const result = await settlementApi.precheck({ month: filters.month.substring(0, 7) })
-    precheckResult.blocking_issues = result.blocking.map((item: any) => item.message)
-    precheckResult.warnings = result.warnings.map((item: any) => item.message)
-    showPrecheckDialog.value = true
-  } catch (error) {
-    ElMessage.error('预检查失败')
-  }
-}
-
-const confirmGenerate = async () => {
-  generating.value = true
-  try {
-    await settlementApi.generate({
-      month: filters.month.substring(0, 7),
-      force: false
-    })
-    ElMessage.success('结算生成成功')
-    showPrecheckDialog.value = false
-    fetchSettlements()
-  } catch (error) {
-    ElMessage.error('结算生成失败')
-  } finally {
-    generating.value = false
-  }
-}
-
-const handleRecalculate = async () => {
-  if (!filters.month) {
-    ElMessage.warning('请选择月份')
-    return
-  }
-
-  try {
-    await ElMessageBox.confirm(
-      '确定要重新计算当前月份的结算数据吗？这将覆盖未锁定的结算记录。',
-      '确认重新计算',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-
-    loading.value = true
-    await settlementApi.recalculate({
-      month: filters.month.substring(0, 7)
-    })
-    ElMessage.success('重新计算成功')
-    fetchSettlements()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      ElMessage.error('重新计算失败')
-    }
-  } finally {
-    loading.value = false
-  }
+const checkMonthLockStatus = async () => {
+  await fetchSettlements()
 }
 
 const handleLock = async () => {
@@ -626,7 +351,7 @@ const handleLock = async () => {
 
   try {
     await ElMessageBox.confirm(
-      '锁定后将无法修改该月份的结算数据，确定要锁定吗？',
+      '确定要锁定当前月份吗？\n\n锁定后该月份数据将固化，作为最终版本。',
       '确认锁定',
       {
         confirmButtonText: '确定',
@@ -637,7 +362,7 @@ const handleLock = async () => {
 
     await settlementApi.lock(filters.month.substring(0, 7))
     ElMessage.success('锁定成功')
-    fetchSettlements()
+    checkMonthLockStatus()
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error('锁定失败')
@@ -653,7 +378,7 @@ const handleUnlock = async () => {
 
   try {
     await ElMessageBox.confirm(
-      '解锁后可以修改该月份的结算数据，确定要解锁吗？',
+      '确定要解锁当前月份吗？',
       '确认解锁',
       {
         confirmButtonText: '确定',
@@ -664,36 +389,11 @@ const handleUnlock = async () => {
 
     await settlementApi.unlock(filters.month.substring(0, 7))
     ElMessage.success('解锁成功')
-    fetchSettlements()
+    checkMonthLockStatus()
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error('解锁失败')
     }
-  }
-}
-
-const handleAdjust = (row: MonthlySettlement) => {
-  currentSettlement.value = row
-  adjustForm.rent_actual = row.rent_actual
-  adjustForm.deduction_minus = row.deduction_minus
-  adjustForm.deduction_plus = row.deduction_plus
-  adjustForm.remark = row.remark || ''
-  showAdjustDialog.value = true
-}
-
-const handleSubmitAdjust = async () => {
-  if (!currentSettlement.value) return
-
-  adjusting.value = true
-  try {
-    await settlementApi.update(currentSettlement.value.id, adjustForm)
-    ElMessage.success('调整成功')
-    showAdjustDialog.value = false
-    fetchSettlements()
-  } catch (error) {
-    ElMessage.error('调整失败')
-  } finally {
-    adjusting.value = false
   }
 }
 
@@ -705,24 +405,17 @@ const handleExport = () => {
 
   const month = filters.month.substring(0, 7)
   const buildingParam = filters.buildingId ? `&building_id=${filters.buildingId}` : ''
-  const url = `/api/export/settlement?month=${month}${buildingParam}`
+  const waterModeParam = `&water_mode=${filters.waterMode}`
+  const url = `/api/export/settlement?month=${month}${buildingParam}${waterModeParam}`
   
   const link = document.createElement('a')
   link.href = url
-  link.download = `扣款表_${month}.xlsx`
+  link.download = `扣款表_${month}_${filters.waterMode === 'double' ? '双月' : '单月'}.xlsx`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   
   ElMessage.success('导出任务已开始')
-}
-
-const resetAdjustForm = () => {
-  adjustForm.rent_actual = 0
-  adjustForm.deduction_minus = 0
-  adjustForm.deduction_plus = 0
-  adjustForm.remark = ''
-  currentSettlement.value = null
 }
 
 onMounted(() => {

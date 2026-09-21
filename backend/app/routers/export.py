@@ -24,45 +24,51 @@ router = APIRouter()
 @router.get("/settlement")
 def export_settlement(
     month: str = Query(..., description="YYYY-MM"),
+    water_mode: str = Query("double", description="水费模式: single=单月, double=双月"),
     db: Session = Depends(get_db),
 ):
-    """导出员工扣款表"""
+    """导出员工扣款表（实时计算）"""
     target_month = month_start(parse_date(month + "-01"))
-    rows = db.query(MonthlySettlement).filter(
-        MonthlySettlement.month == target_month
-    ).order_by(MonthlySettlement.id.asc()).all()
-
-    # 关联信息
+    
+    # 验证 water_mode
+    if water_mode not in ["single", "double"]:
+        water_mode = "double"
+    
+    # 导入实时计算函数
+    from ..services.settlement_service import calculate_realtime_settlements
+    
+    # 实时计算结算数据
+    settlements = calculate_realtime_settlements(db, target_month, water_mode)
+    
+    # 转换为导出格式
     items = []
-    for s in rows:
-        emp = db.query(Employee).filter(Employee.id == s.employee_id).first()
-        room = db.query(Room).filter(Room.id == s.room_id).first()
-        building = None
-        if room:
-            building = db.query(Building).filter(Building.id == room.building_id).first()
+    for s in settlements:
+        emp = db.query(Employee).filter(Employee.id == s['employee_id']).first()
+        room = db.query(Room).filter(Room.id == s['room_id']).first()
         items.append({
-            "building_no": building.building_no if building else "",
-            "room_no": room.room_no if room else "",
+            "building_no": s.get('building_no', ''),
+            "room_no": s.get('room_no', ''),
             "room_unit": room.room_unit if (room and hasattr(room, 'room_unit')) else "",
-            "room_name": room.room_name if room else "",
-            "employee_no": emp.employee_no if emp else "",
-            "employee_name": emp.name if emp else "",
-            "company": emp.company if emp else "",
-            "department": emp.department if emp else "",
-            "position": emp.position if emp else "",
-            "remark": s.remark or (emp.remark if emp else ""),
-            "rent_should": float(s.rent_should) if s.rent_should else 0,
-            "rent_actual": float(s.rent_actual) if s.rent_actual else 0,
-            "electricity_fee": float(s.electricity_fee) if s.electricity_fee else 0,
-            "ac_electricity_fee": float(s.ac_electricity_fee) if s.ac_electricity_fee else 0,
-            "water_fee": float(s.water_fee) if s.water_fee else 0,
-            "deduction_minus": float(s.deduction_minus) if s.deduction_minus else 0,
-            "deduction_plus": float(s.deduction_plus) if s.deduction_plus else 0,
-            "total_amount": float(s.total_amount) if s.total_amount else 0,
+            "room_name": s.get('room_name', ''),
+            "employee_no": s.get('employee_no', ''),
+            "employee_name": s.get('employee_name', ''),
+            "company": s.get('company', ''),
+            "department": s.get('department', ''),
+            "position": s.get('position', ''),
+            "remark": s.get('remark', '') or (emp.remark if emp else ""),
+            "rent_should": s.get('rent_should', 0),
+            "rent_actual": s.get('rent_actual', 0),
+            "electricity_fee": s.get('electricity_fee', 0),
+            "ac_electricity_fee": s.get('ac_electricity_fee', 0),
+            "water_fee": s.get('water_fee', 0),
+            "deduction_minus": s.get('deduction_minus', 0),
+            "deduction_plus": s.get('deduction_plus', 0),
+            "total_amount": s.get('total_amount', 0),
         })
 
     bio = export_settlement_excel(items)
-    filename = f"扣款表_{month}.xlsx"
+    water_suffix = "双月" if water_mode == "double" else "单月"
+    filename = f"扣款表_{month}_{water_suffix}.xlsx"
     encoded_filename = quote(filename)
     return StreamingResponse(
         BytesIO(bio),
