@@ -165,7 +165,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="普通电费" width="110" align="right">
+      <el-table-column label="分摊电费" width="110" align="right">
         <template #default="{ row }">
           ¥{{ formatNumber(row.electricity_fee) }}
         </template>
