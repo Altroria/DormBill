@@ -136,9 +136,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="工号-姓名" width="150">
+      <el-table-column label="姓名" width="120">
         <template #default="{ row }">
-          {{ row.employee_no }} - {{ row.employee_name }}
+          {{ row.employee_name }}
         </template>
       </el-table-column>
 
@@ -207,12 +207,6 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="状态" width="90" align="center" fixed="right">
-        <template #default>
-          <el-tag type="info">实时</el-tag>
-        </template>
-      </el-table-column>
-
     </el-table>
 
     <el-empty 
@@ -225,7 +219,7 @@
       <el-pagination
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.pageSize"
-        :page-sizes="[20, 50, 100, 200]"
+        :page-sizes="[10, 20, 50, 100, 200]"
         :total="total"
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
@@ -259,7 +253,7 @@ const filters = reactive({
 
 const pagination = reactive({
   page: 1,
-  pageSize: 20
+  pageSize: 10
 })
 
 
