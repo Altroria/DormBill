@@ -1,6 +1,7 @@
 """楼栋 ORM 模型"""
 from sqlalchemy import Column, BigInteger, String, DateTime, Enum, Index
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from ..database import Base
 
 
@@ -20,6 +21,9 @@ class Building(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(),
                         comment="更新时间")
     deleted_at = Column(DateTime, nullable=True, comment="软删除时间")
+    
+    # 关联
+    water_expenses = relationship("WaterExpense", back_populates="building")
 
     __table_args__ = (
         Index("idx_building_no", "building_no"),

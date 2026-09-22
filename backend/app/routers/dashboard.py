@@ -7,7 +7,7 @@ from sqlalchemy import and_, or_
 from ..database import get_db
 from ..models import (
     Building, Room, Employee, ResidenceRecord,
-    MeterRecord, WaterExpense, WaterAllocation, MonthlySettlement,
+    MeterRecord, WaterMeterRecord, MonthlySettlement,
 )
 from ..utils.date_utils import parse_date, month_start, add_months
 
@@ -87,18 +87,23 @@ def dashboard(
     total_water = sum(float(s.water_fee or 0) for s in settlements)
     total_deduction = sum(float(s.total_amount or 0) for s in settlements)
 
-    # 水费周期
-    recent_water = db.query(WaterExpense).order_by(
-        WaterExpense.period_start.desc()
-    ).limit(5).all()
+    # 水表统计
+    month_water_meter_count = db.query(WaterMeterRecord).filter(
+        WaterMeterRecord.month == target_month
+    ).count()
+    water_meter_progress = f"{month_water_meter_count}/{total_rooms}"
+    
+    # 近期水表记录
+    recent_water = db.query(WaterMeterRecord).filter(
+        WaterMeterRecord.month == target_month
+    ).order_by(WaterMeterRecord.created_at.desc()).limit(10).all()
     water_summary = [
         {
             "id": we.id,
             "building_id": we.building_id,
-            "period_start": we.period_start.isoformat(),
-            "period_end": we.period_end.isoformat(),
-            "total_amount": float(we.total_amount) if we.total_amount else 0,
-            "status": we.status,
+            "room_no": we.room_no,
+            "month": we.month.isoformat(),
+            "total_fee": float(we.total_fee) if we.total_fee else 0,
         }
         for we in recent_water
     ]
@@ -111,6 +116,7 @@ def dashboard(
             "employee_count": employee_count,
             "current_residents": current_residents,
             "meter_progress": meter_progress,
+            "water_meter_progress": water_meter_progress,
         },
         "amounts": {
             "rent_total": round(total_rent, 2),

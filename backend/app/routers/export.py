@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import (
-    MonthlySettlement, MeterRecord, WaterExpense, WaterAllocation,
+    MonthlySettlement, MeterRecord, WaterMeterRecord,
     Employee, Room, Building,
 )
 from ..services.excel_service import (
@@ -123,43 +123,37 @@ def export_meter_detail(
 
 @router.get("/water-detail")
 def export_water_detail(
-    period: str = Query(..., description="YYYY-MM 起始月"),
+    month: str = Query(..., description="YYYY-MM"),
     db: Session = Depends(get_db),
 ):
-    """导出水费分摊明细"""
-    target_period = month_start(parse_date(period + "-01"))
-    rows = db.query(WaterExpense).filter(
-        WaterExpense.period_start <= target_period,
-        WaterExpense.period_end >= target_period,
+    """导出水费明细"""
+    target_month = month_start(parse_date(month + "-01"))
+    rows = db.query(WaterMeterRecord).filter(
+        WaterMeterRecord.month == target_month
     ).all()
 
     items = []
-    for we in rows:
-        allocs = db.query(WaterAllocation).filter(
-            WaterAllocation.water_expense_id == we.id
-        ).all()
-        for a in allocs:
-            emp = db.query(Employee).filter(Employee.id == a.employee_id).first()
-            room = db.query(Room).filter(Room.id == a.room_id).first()
-            building = None
-            if room:
-                building = db.query(Building).filter(Building.id == room.building_id).first()
-            items.append({
-                "period_start": we.period_start.isoformat(),
-                "period_end": we.period_end.isoformat(),
-                "building_no": building.building_no if building else "",
-                "room_no": room.room_no if room else "",
-                "room_name": room.room_name if room else "",
-                "employee_name": emp.name if emp else "",
-                "month1_days": a.month1_days,
-                "month2_days": a.month2_days,
-                "is_valid": a.is_valid,
-                "amount": float(a.amount) if a.amount else 0,
-                "remark": a.remark or "",
-            })
+    for m in rows:
+        room = db.query(Room).filter(Room.id == m.room_id).first()
+        building = None
+        if room:
+            building = db.query(Building).filter(Building.id == room.building_id).first()
+        items.append({
+            "building_no": building.building_no if building else "",
+            "room_no": room.room_no if room else "",
+            "room_name": room.room_name if room else "",
+            "water_meter_no": m.water_meter_no or "",
+            "previous_reading": float(m.previous_reading) if m.previous_reading else 0,
+            "current_reading": float(m.current_reading) if m.current_reading else 0,
+            "usage": float(m.usage) if m.usage else 0,
+            "unit_price": float(m.unit_price) if m.unit_price else 0,
+            "total_fee": float(m.total_fee) if m.total_fee else 0,
+            "status": m.status,
+            "remark": m.remark or "",
+        })
 
     bio = export_water_detail_excel(items)
-    filename = f"水费明细_{period}.xlsx"
+    filename = f"水费明细_{month}.xlsx"
     encoded_filename = quote(filename)
     return StreamingResponse(
         BytesIO(bio),

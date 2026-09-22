@@ -26,7 +26,7 @@ from app.database import Base
 # 导入所有模型以便 alembic 可以检测到它们
 from app.models import (
     Building, Room, Employee, ResidenceRecord, MeterRecord,
-    WaterExpense, WaterAllocation, MonthlySettlement, OperationLog
+    WaterMeterRecord, MonthlySettlement, OperationLog
 )
 target_metadata = Base.metadata
 

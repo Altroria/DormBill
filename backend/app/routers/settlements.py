@@ -62,9 +62,11 @@ def list_settlements(
     keyword: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     water_mode: str = Query("double", description="水费模式: single=单月, double=双月"),
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(20, ge=1, le=500, description="每页条数"),
     db: Session = Depends(get_db),
 ):
-    """月度结算列表（实时计算）"""
+    """月度结算列表（实时计算，支持分页）"""
     target_month = month_start(parse_date(month + "-01"))
     
     # 验证 water_mode
@@ -84,7 +86,15 @@ def list_settlements(
     if status:
         settlements = [s for s in settlements if s.get("status") == status]
     
-    return {"items": settlements, "total": len(settlements)}
+    # 总数
+    total = len(settlements)
+    
+    # 分页
+    start = (page - 1) * page_size
+    end = start + page_size
+    paginated_items = settlements[start:end]
+    
+    return {"items": paginated_items, "total": total}
 
 
 @router.post("/precheck", response_model=PrecheckResponse)

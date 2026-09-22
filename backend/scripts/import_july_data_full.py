@@ -17,7 +17,7 @@ from app.models.room import Room
 from app.models.employee import Employee
 from app.models.residence import ResidenceRecord
 from app.models.meter import MeterRecord
-from app.models.water import WaterExpense
+from app.models.water import WaterMeterRecord
 
 # 数据库配置
 DB_CONFIG = {

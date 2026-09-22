@@ -129,13 +129,13 @@ export interface WaterAllocation {
   employee_id: number;
   room_id: number;
   amount: number;
-  month1_days: number;
-  month2_days: number;
-  is_valid: number;
+  days_first_month: number;
+  days_second_month: number;
+  is_valid: boolean;
   remark?: string;
   employee_name?: string;
   employee_no?: string;
-  room_no?: string;
+  room_number?: string;
   room_name?: string;
   building_no?: string;
 }

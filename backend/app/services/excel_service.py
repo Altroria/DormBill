@@ -165,34 +165,34 @@ def export_meter_detail_excel(items: List[Dict]) -> bytes:
 
 
 def export_water_detail_excel(items: List[Dict]) -> bytes:
-    """导出水费分摊明细"""
+    """导出水费明细"""
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "水费分摊明细"
+    ws.title = "水费明细"
 
     headers = [
-        "水费周期起始", "水费周期结束", "楼栋", "房号", "房间",
-        "姓名", "第一个月天数", "第二个月天数", "是否有效", "个人水费", "备注",
+        "楼栋", "房号", "房间", "水表编号",
+        "上月读数", "本月读数", "用水量", "单价", "水费", "状态", "备注",
     ]
     ws.append(headers)
     _style_header(ws)
 
     for item in items:
         ws.append([
-            item.get("period_start", ""),
-            item.get("period_end", ""),
             item.get("building_no", ""),
             item.get("room_no", ""),
             item.get("room_name", ""),
-            item.get("employee_name", ""),
-            item.get("month1_days", 0),
-            item.get("month2_days", 0),
-            "有效" if item.get("is_valid") else "无效",
-            item.get("amount", 0),
+            item.get("water_meter_no", ""),
+            item.get("previous_reading", 0),
+            item.get("current_reading", 0),
+            item.get("usage", 0),
+            item.get("unit_price", 0),
+            item.get("total_fee", 0),
+            item.get("status", ""),
             item.get("remark", ""),
         ])
 
-    for col in [7, 8, 10]:
+    for col in range(5, 10):
         for row in range(2, ws.max_row + 1):
             cell = ws.cell(row=row, column=col)
             cell.alignment = MONEY_ALIGN

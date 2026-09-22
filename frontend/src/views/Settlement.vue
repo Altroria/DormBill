@@ -220,6 +220,18 @@
       description="暂无数据"
       style="margin: 40px 0"
     />
+
+    <div v-if="total > 0" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <el-pagination
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.pageSize"
+        :page-sizes="[20, 50, 100, 200]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -233,6 +245,7 @@ import type { MonthlySettlement, Building } from '@/types'
 
 const loading = ref(false)
 const isMonthLocked = ref(false)
+const total = ref(0)
 
 const settlements = ref<MonthlySettlement[]>([])
 const buildings = ref<Building[]>([])
@@ -242,6 +255,11 @@ const filters = reactive({
   buildingId: undefined as number | undefined,
   search: '',
   waterMode: 'double' as 'single' | 'double'
+})
+
+const pagination = reactive({
+  page: 1,
+  pageSize: 20
 })
 
 
@@ -323,12 +341,15 @@ const fetchSettlements = async () => {
     const params: any = {
       month: filters.month.substring(0, 7),
       water_mode: filters.waterMode,
+      page: pagination.page,
+      page_size: pagination.pageSize,
     }
     if (filters.buildingId) params.building_id = filters.buildingId
     if (filters.search) params.keyword = filters.search
 
     const response = await settlementApi.list(params)
     settlements.value = response.items || []
+    total.value = response.total || 0
     
     // Check if month is locked
     isMonthLocked.value = settlements.value.some((s: MonthlySettlement) => s.status === 'locked')
@@ -337,6 +358,17 @@ const fetchSettlements = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handlePageChange = (page: number) => {
+  pagination.page = page
+  fetchSettlements()
+}
+
+const handleSizeChange = (size: number) => {
+  pagination.pageSize = size
+  pagination.page = 1
+  fetchSettlements()
 }
 
 const checkMonthLockStatus = async () => {

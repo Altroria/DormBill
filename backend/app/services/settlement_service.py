@@ -19,7 +19,7 @@ from .rent_service import (
     is_in_probation_for_residence,
     get_active_residence_in_month,
 )
-from .water_service import get_employee_water_fee_for_month, get_employee_water_fee_for_month_v2
+from .water_meter_service import get_employee_water_fee_for_month
 
 
 def precheck_settlement(
@@ -182,7 +182,7 @@ def generate_settlement(
 
         # 个人水费（根据模式选择）
         include_prev = (water_mode == "double")
-        water_fee = get_employee_water_fee_for_month_v2(db, emp_id, target_month, include_prev)
+        water_fee = get_employee_water_fee_for_month(db, emp_id, target_month)
 
         # 最终扣款
         total = calculate_final_amount(
@@ -329,9 +329,7 @@ def calculate_realtime_settlements(
     water_by_emp = {}
     for res in residences:
         emp_id = res.employee_id
-        water_by_emp[emp_id] = get_employee_water_fee_for_month_v2(
-            db, emp_id, target_month, include_previous_month=include_prev
-        )
+        water_by_emp[emp_id] = get_employee_water_fee_for_month(db, emp_id, target_month)
     
     # 4. 组装结算数据
     results = []

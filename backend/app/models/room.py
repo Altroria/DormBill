@@ -20,8 +20,11 @@ class Room(Base):
     room_name = Column(String(50), nullable=False, comment="房间名称")
     meter_no = Column(String(50), nullable=True, comment="电表编号")
     ac_meter_no = Column(String(50), nullable=True, comment="空调电表编号")
+    water_meter_no = Column(String(50), nullable=True, comment="水表编号")
     electricity_price = Column(Numeric(10, 4), default=Decimal("0.4900"),
                                comment="默认电价")
+    water_unit_price = Column(Numeric(10, 4), default=Decimal("3.5000"),
+                              comment="默认水价")
     rent_standard = Column(Numeric(10, 2), default=Decimal("0.00"),
                            comment="房租标准")
     status = Column(Enum("active", "inactive", name="room_status"),

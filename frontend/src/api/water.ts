@@ -5,7 +5,7 @@ import { get, post, put, del } from './index';
 import type { WaterExpense, ListResponse } from '@/types';
 
 export const waterApi = {
-  list: (params?: { building_id?: number; period?: string }) =>
+  list: (params?: { building_id?: number; period?: string; page?: number; page_size?: number }) =>
     get<ListResponse<WaterExpense>>('/water-expenses', params),
 
   create: (data: Partial<WaterExpense>) =>

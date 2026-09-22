@@ -74,7 +74,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/water',
     name: 'Water',
-    component: () => import('@/views/WaterManage.vue'),
+    component: () => import('@/views/WaterMeterManage.vue'),
     meta: {
       title: '水费管理',
       icon: 'Drizzling',

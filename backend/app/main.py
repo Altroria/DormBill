@@ -7,9 +7,11 @@ from .config import settings
 from .database import init_db
 from .routers import (
     buildings, rooms, employees, residences,
-    meters, water, settlements, export, dashboard, import_data,
+    meters, settlements, export, dashboard, import_data,
+    water_expenses,
 )
 from .routers.meters_v2 import router as meters_v2_router
+from .routers.water_meters_v2 import router as water_meters_v2_router
 
 
 def create_app() -> FastAPI:
@@ -38,7 +40,8 @@ def create_app() -> FastAPI:
     app.include_router(residences.router, prefix="/api/residences", tags=["入住"])
     app.include_router(meters.router, prefix="/api/meters", tags=["电表（旧版）"])
     app.include_router(meters_v2_router, prefix="/api", tags=["电表管理V2"])
-    app.include_router(water.router, prefix="/api/water-expenses", tags=["水费"])
+    app.include_router(water_meters_v2_router, prefix="/api", tags=["水表管理V2"])
+    app.include_router(water_expenses.router, prefix="/api/water-expenses", tags=["水费账单（旧版）"])
     app.include_router(settlements.router, prefix="/api/settlements", tags=["结算"])
     app.include_router(export.router, prefix="/api/export", tags=["导出"])
     app.include_router(import_data.router, prefix="/api/import", tags=["导入"])
