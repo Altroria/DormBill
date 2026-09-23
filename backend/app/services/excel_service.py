@@ -71,7 +71,7 @@ def export_settlement_excel(items: List[Dict]) -> bytes:
 
     headers = [
         "楼号", "房号", "室号", "房间", "任职单位", "一级部门", "职务",
-        "工号", "姓名", "转宿日期，备注",
+        "姓名", "转宿日期，备注",
         "普通电费", "空调电费", "水费",
         "应住房租", "实扣房租", "补扣-", "补加+", "水电+实扣+补扣",
     ]
@@ -87,7 +87,6 @@ def export_settlement_excel(items: List[Dict]) -> bytes:
             item.get("company", ""),
             item.get("department", ""),
             item.get("position", ""),
-            item.get("employee_no", ""),
             item.get("employee_name", ""),
             item.get("remark", ""),
             item.get("electricity_fee", 0),
@@ -101,13 +100,13 @@ def export_settlement_excel(items: List[Dict]) -> bytes:
         ])
 
     # 数字列右对齐
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=11, max_col=18):
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=10, max_col=17):
         for cell in row:
             cell.alignment = MONEY_ALIGN
             cell.border = BORDER
 
     # 数字格式
-    for col in range(11, 19):
+    for col in range(10, 18):
         for row in range(2, ws.max_row + 1):
             ws.cell(row=row, column=col).number_format = "0.00"
 

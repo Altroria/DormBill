@@ -277,7 +277,7 @@ def calculate_realtime_settlements(
     
     Args:
         target_month: 目标月份
-        water_mode: 水费计算模式 "single"=单月 "double"=双月
+        water_mode: 水费计算模式 "single"=单月 "double"=双月 "none"=不计算
     
     Returns:
         结算数据列表（字典格式）
@@ -363,8 +363,11 @@ def calculate_realtime_settlements(
         elec_fee = round_money(elec["electricity_fee"])
         ac_fee = round_money(elec["ac_electricity_fee"])
         
-        # 个人水费
-        water_fee = water_by_emp.get(emp_id, Decimal("0"))
+        # 个人水费（根据水费模式）
+        if water_mode == "none":
+            water_fee = Decimal("0")
+        else:
+            water_fee = water_by_emp.get(emp_id, Decimal("0"))
         
         # 查询是否有已保存的调整数据
         existing = db.query(MonthlySettlement).filter(

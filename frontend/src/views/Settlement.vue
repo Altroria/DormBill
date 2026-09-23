@@ -30,11 +30,12 @@
       <el-select
         v-model="filters.waterMode"
         placeholder="水费周期"
-        style="width: 140px"
+        style="width: 160px"
         @change="fetchSettlements"
       >
         <el-option label="双月水费" value="double" />
         <el-option label="单月水费" value="single" />
+        <el-option label="不计算水费" value="none" />
       </el-select>
 
       <el-input
@@ -90,7 +91,7 @@
       style="margin-bottom: 16px"
     >
       <div>
-        水费按双月计算：上月+本月（例如：10月结算 = 9月水费 + 10月水费）
+        水费按双月计算:上月+本月(例如:10月结算 = 9月水费 + 10月水费)
       </div>
     </el-alert>
     
@@ -103,10 +104,23 @@
       style="margin-bottom: 16px"
     >
       <div>
-        水费仅计算当月（例如：10月结算 = 10月水费）
+        水费仅计算当月(例如:10月结算 = 10月水费)
       </div>
       <div style="margin-top: 8px; font-size: 12px; color: #606266;">
-        💡 切换水费模式或筛选条件后，点击"查询"按钮刷新数据
+        💡 切换水费模式或筛选条件后,点击"查询"按钮刷新数据
+      </div>
+    </el-alert>
+
+    <el-alert
+      v-if="filters.waterMode === 'none'"
+      title="💡 实时查询 - 不计算水费"
+      type="success"
+      :closable="false"
+      show-icon
+      style="margin-bottom: 16px"
+    >
+      <div>
+        本次结算不包含水费,仅计算房租和电费
       </div>
     </el-alert>
 
@@ -423,7 +437,7 @@ const handleUnlock = async () => {
   }
 }
 
-const handleExport = () => {
+const handleExport = async () => {
   if (!filters.month) {
     ElMessage.warning('请选择月份')
     return
@@ -434,14 +448,35 @@ const handleExport = () => {
   const waterModeParam = `&water_mode=${filters.waterMode}`
   const url = `/api/export/settlement?month=${month}${buildingParam}${waterModeParam}`
   
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `扣款表_${month}_${filters.waterMode === 'double' ? '双月' : '单月'}.xlsx`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  
-  ElMessage.success('导出任务已开始')
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error('导出失败')
+    }
+    
+    const blob = await response.blob()
+    const downloadUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    
+    let waterSuffix = '双月'
+    if (filters.waterMode === 'single') {
+      waterSuffix = '单月'
+    } else if (filters.waterMode === 'none') {
+      waterSuffix = '不含水费'
+    }
+    link.download = `扣款表_${month}_${waterSuffix}.xlsx`
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(downloadUrl)
+    
+    ElMessage.success('导出成功')
+  } catch (error) {
+    console.error('导出失败:', error)
+    ElMessage.error('导出失败，请检查网络连接')
+  }
 }
 
 onMounted(() => {

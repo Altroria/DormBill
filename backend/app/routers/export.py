@@ -24,14 +24,14 @@ router = APIRouter()
 @router.get("/settlement")
 def export_settlement(
     month: str = Query(..., description="YYYY-MM"),
-    water_mode: str = Query("double", description="水费模式: single=单月, double=双月"),
+    water_mode: str = Query("double", description="水费模式: single=单月, double=双月, none=不计算"),
     db: Session = Depends(get_db),
 ):
     """导出员工扣款表（实时计算）"""
     target_month = month_start(parse_date(month + "-01"))
     
     # 验证 water_mode
-    if water_mode not in ["single", "double"]:
+    if water_mode not in ["single", "double", "none"]:
         water_mode = "double"
     
     # 导入实时计算函数
@@ -67,7 +67,12 @@ def export_settlement(
         })
 
     bio = export_settlement_excel(items)
-    water_suffix = "双月" if water_mode == "double" else "单月"
+    if water_mode == "double":
+        water_suffix = "双月"
+    elif water_mode == "single":
+        water_suffix = "单月"
+    else:
+        water_suffix = "不含水费"
     filename = f"扣款表_{month}_{water_suffix}.xlsx"
     encoded_filename = quote(filename)
     return StreamingResponse(

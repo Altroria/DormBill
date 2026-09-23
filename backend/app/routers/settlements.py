@@ -61,7 +61,7 @@ def list_settlements(
     building_id: Optional[int] = Query(None),
     keyword: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    water_mode: str = Query("double", description="水费模式: single=单月, double=双月"),
+    water_mode: str = Query("double", description="水费模式: single=单月, double=双月, none=不计算"),
     page: int = Query(1, ge=1, description="页码"),
     page_size: int = Query(20, ge=1, le=500, description="每页条数"),
     db: Session = Depends(get_db),
@@ -70,7 +70,7 @@ def list_settlements(
     target_month = month_start(parse_date(month + "-01"))
     
     # 验证 water_mode
-    if water_mode not in ["single", "double"]:
+    if water_mode not in ["single", "double", "none"]:
         water_mode = "double"
     
     # 实时计算结算数据
