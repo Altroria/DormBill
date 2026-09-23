@@ -262,7 +262,7 @@ const filters = reactive({
   month: new Date().toISOString().substring(0, 10),
   buildingId: undefined as number | undefined,
   search: '',
-  waterMode: 'double' as 'single' | 'double'
+  waterMode: 'double' as 'single' | 'double' | 'none'
 })
 
 const pagination = reactive({

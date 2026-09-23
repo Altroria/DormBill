@@ -256,13 +256,13 @@
               </el-table-column>
               
               <el-table-column label="空调电费" width="120" align="right">
-                <template #default="{ row, $index }">
+                <template #default="{ row }">
                   ¥{{ calculateAcFee(row, room).toFixed(2) }}
                 </template>
               </el-table-column>
               
               <el-table-column label="人均空调费" align="right">
-                <template #default="{ row, $index }">
+                <template #default="{ row }">
                   ¥{{ (row.occupants > 0 ? calculateAcFee(row, room) / row.occupants : 0).toFixed(2) }}
                 </template>
               </el-table-column>

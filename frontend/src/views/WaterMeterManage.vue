@@ -208,9 +208,6 @@ const changesMap = ref(new Map<string, boolean>())
 // 计算属性
 const hasChanges = computed(() => changesMap.value.size > 0)
 const changedCount = computed(() => changesMap.value.size)
-const totalWaterFee = computed(() => {
-  return waterMeterData.value.reduce((sum, row) => sum + (row.total_fee || 0), 0)
-})
 
 // 加载楼栋列表
 const loadBuildings = async () => {
