@@ -16,7 +16,7 @@ from .routers.water_meters_v2 import router as water_meters_v2_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="蓉蓉的收租小工具 API",
+        title="行政宿舍管理系统 API",
         description="宿舍房租、水电费用管理系统",
         version="1.0.0",
         docs_url="/docs",
@@ -58,7 +58,7 @@ def create_app() -> FastAPI:
     @app.get("/", tags=["健康检查"])
     def root():
         return {
-            "name": "蓉蓉的收租小工具 API",
+            "name": "行政宿舍管理系统 API",
             "version": "1.0.0",
             "status": "running",
         }

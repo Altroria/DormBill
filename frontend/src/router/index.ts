@@ -101,7 +101,7 @@ const router = createRouter({
 router.beforeEach((to, _from) => {
   const title = to.meta.title as string;
   if (title) {
-    document.title = `${title} - 蓉蓉的收租小工具`;
+    document.title = `${title} - 行政宿舍管理系统`;
   }
   return true;
 });

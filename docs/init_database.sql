@@ -1,4 +1,4 @@
--- 蓉蓉的收租小工具 - 数据库初始化脚本
+-- 行政宿舍管理系统 - 数据库初始化脚本
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS dormbill CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

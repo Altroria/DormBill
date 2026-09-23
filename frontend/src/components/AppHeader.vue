@@ -4,7 +4,7 @@
       <el-icon class="home-icon" :size="24">
         <HomeFilled />
       </el-icon>
-      <h1 class="title">蓉蓉的收租小工具</h1>
+      <h1 class="title">行政宿舍管理系统</h1>
     </div>
     <div class="header-right">
       <el-tag type="info" effect="plain">

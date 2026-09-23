@@ -1,4 +1,4 @@
-# 蓉蓉的收租小工具 - 宿舍房租水电费用管理系统
+# 行政宿舍管理系统 - 宿舍房租水电费用管理系统
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
@@ -568,4 +568,4 @@ server {
 
 ---
 
-**蓉蓉的收租小工具** - 让宿舍费用管理更简单 💰
+**行政宿舍管理系统** - 让宿舍费用管理更简单 💰
