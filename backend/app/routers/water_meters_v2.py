@@ -2,12 +2,18 @@
 from datetime import date
 from decimal import Decimal
 from typing import Optional, List
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from io import BytesIO
 
 from ..database import get_db
 from ..services.water_meter_v2_service import WaterMeterV2Service
+from ..services.excel_service import (
+    export_water_template_excel,
+    import_water_from_excel,
+)
 
 
 router = APIRouter(prefix="/water-meters-v2", tags=["水费管理"])
@@ -169,3 +175,113 @@ def batch_update_water_meters(
     )
     
     return result
+
+
+@router.get("/export-template")
+def export_water_template(
+    month: str = Query(..., description="月份 YYYY-MM"),
+    building_id: Optional[int] = Query(None, description="楼栋ID"),
+    db: Session = Depends(get_db),
+):
+    """导出水费导入模板（Excel）"""
+    from ..models.water import WaterMeterRecord
+    from ..models.building import Building
+    from sqlalchemy import and_, distinct
+    from ..models.room import Room
+    
+    month_date = date.fromisoformat(f"{month}-01")
+    
+    # 查询水费记录（按房号分组）
+    query = db.query(
+        WaterMeterRecord.building_id,
+        WaterMeterRecord.room_no,
+    ).filter(
+        WaterMeterRecord.month == month_date
+    ).distinct()
+    
+    if building_id:
+        query = query.filter(WaterMeterRecord.building_id == building_id)
+    
+    water_records = query.all()
+    
+    # 构建房间数据
+    rooms_data = []
+    for record in water_records:
+        building = db.query(Building).filter(Building.id == record.building_id).first()
+        
+        # 获取房间名称（取第一个房间）
+        room = db.query(Room).filter(
+            and_(
+                Room.building_id == record.building_id,
+                Room.room_no == record.room_no,
+                Room.status == "active"
+            )
+        ).first()
+        
+        rooms_data.append({
+            "building_id": record.building_id,
+            "building_no": building.building_no if building else "",
+            "room_no": record.room_no,
+            "room_name": room.room_name if room else "",
+        })
+    
+    # 生成Excel
+    excel_bytes = export_water_template_excel(
+        month=month_date,
+        building_id=building_id,
+        rooms_data=rooms_data
+    )
+    
+    filename = f"水费导入模板_{month}.xlsx"
+    
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.post("/import-excel")
+async def import_water_excel(
+    month: str = Query(..., description="月份 YYYY-MM"),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """从Excel导入水费数据"""
+    month_date = date.fromisoformat(f"{month}-01")
+    
+    # 读取上传的文件
+    content = await file.read()
+    bio = BytesIO(content)
+    
+    # 解析Excel
+    result = import_water_from_excel(bio, month_date)
+    
+    service = WaterMeterV2Service(db)
+    
+    success_count = 0
+    import_errors = []
+    
+    # 导入水费数据
+    for water_data in result["water_meters"]:
+        try:
+            service.update_water_meter(
+                building_id=water_data["building_id"],
+                room_no=water_data["room_no"],
+                month=month_date,
+                total_fee=Decimal(str(water_data["total_fee"])),
+                remark=water_data.get("remark"),
+            )
+            success_count += 1
+        except Exception as e:
+            import_errors.append({
+                "data": f"{water_data['building_id']}-{water_data['room_no']}",
+                "error": str(e)
+            })
+    
+    return {
+        "message": f"导入完成：成功 {success_count} 条",
+        "imported": success_count,
+        "parse_errors": result["errors"],
+        "import_errors": import_errors,
+    }

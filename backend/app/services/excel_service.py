@@ -2,7 +2,7 @@
 from io import BytesIO
 from datetime import date
 from decimal import Decimal
-from typing import List, Dict
+from typing import List, Dict, Optional
 import openpyxl
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
@@ -40,14 +40,15 @@ def _autosize(ws):
         for cell in col:
             try:
                 if cell.value:
-                    length = max(len(str(c) for c in str(cell.value).split("\n")))
+                    cell_str = str(cell.value)
+                    length = len(cell_str)
                     max_len = max(max_len, length)
             except Exception:
                 pass
         ws.column_dimensions[col_letter].width = min(max(max_len + 2, 10), 30)
 
 
-def _parse_date_cell(cell) -> date | None:
+def _parse_date_cell(cell) -> Optional[date]:
     """解析日期单元格"""
     if cell is None or cell == "":
         return None
@@ -349,10 +350,284 @@ def import_residences_from_excel(bio: BytesIO) -> Dict:
     return {"rows": rows, "errors": errors}
 
 
+def export_electricity_template_excel(month: date, building_id: Optional[int], rooms_data: List[Dict]) -> bytes:
+    """导出电费导入模板（包含现有房间信息）"""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "电费导入模板"
+    
+    # 添加说明
+    ws.merge_cells("A1:M1")
+    ws["A1"] = f"电费导入模板 - {month.strftime('%Y年%m月')}"
+    ws["A1"].font = Font(name="Microsoft YaHei", size=14, bold=True, color="1E40AF")
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 25
+    
+    ws.merge_cells("A2:M2")
+    ws["A2"] = "说明：请填写【总表当前读数】和【空调表当前读数】列，保存后导入系统"
+    ws["A2"].font = Font(name="Microsoft YaHei", size=10, color="DC2626")
+    ws["A2"].alignment = Alignment(horizontal="left", vertical="center")
+    
+    # 表头
+    headers = [
+        "楼栋ID*", "楼栋", "房号*", "总表表号", "总表上月读数", "总表当前读数*",
+        "房间ID*", "室号", "房间名称", "空调表号", "空调上月读数", "空调当前读数*", "备注"
+    ]
+    ws.append(headers)
+    _style_header(ws, row=3)
+    
+    # 填充现有房间数据
+    for room_data in rooms_data:
+        # 总表行
+        main_row = [
+            room_data.get("building_id", ""),
+            room_data.get("building_no", ""),
+            room_data.get("room_no", ""),
+            room_data.get("main_meter_no", ""),
+            room_data.get("main_previous_reading", ""),
+            "",  # 待填写
+        ]
+        
+        # 空调表信息
+        ac_meters = room_data.get("ac_meters", [])
+        if ac_meters:
+            for i, ac in enumerate(ac_meters):
+                if i == 0:
+                    # 第一行空调表与总表同行
+                    main_row.extend([
+                        ac.get("room_id", ""),
+                        ac.get("room_unit", ""),
+                        ac.get("room_name", ""),
+                        ac.get("ac_meter_no", ""),
+                        ac.get("ac_previous_reading", ""),
+                        "",  # 待填写
+                        ""
+                    ])
+                    ws.append(main_row)
+                else:
+                    # 其他空调表单独成行
+                    ws.append([
+                        "", "", "", "", "", "",  # 总表列空
+                        ac.get("room_id", ""),
+                        ac.get("room_unit", ""),
+                        ac.get("room_name", ""),
+                        ac.get("ac_meter_no", ""),
+                        ac.get("ac_previous_reading", ""),
+                        "",  # 待填写
+                        ""
+                    ])
+        else:
+            # 没有空调表
+            main_row.extend(["", "", "", "", "", "", ""])
+            ws.append(main_row)
+    
+    # 设置列宽和边框
+    for col_idx in range(1, 14):
+        for row_idx in range(3, ws.max_row + 1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.border = BORDER
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+    
+    ws.column_dimensions["A"].width = 10
+    ws.column_dimensions["B"].width = 10
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 15
+    ws.column_dimensions["E"].width = 15
+    ws.column_dimensions["F"].width = 15
+    ws.column_dimensions["G"].width = 10
+    ws.column_dimensions["H"].width = 8
+    ws.column_dimensions["I"].width = 15
+    ws.column_dimensions["J"].width = 15
+    ws.column_dimensions["K"].width = 15
+    ws.column_dimensions["L"].width = 15
+    ws.column_dimensions["M"].width = 20
+    
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+    return bio.getvalue()
+
+
+def export_water_template_excel(month: date, building_id: Optional[int], rooms_data: List[Dict]) -> bytes:
+    """导出水费导入模板（包含现有房间信息）"""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "水费导入模板"
+    
+    # 添加说明
+    ws.merge_cells("A1:F1")
+    ws["A1"] = f"水费导入模板 - {month.strftime('%Y年%m月')}"
+    ws["A1"].font = Font(name="Microsoft YaHei", size=14, bold=True, color="1E40AF")
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 25
+    
+    ws.merge_cells("A2:F2")
+    ws["A2"] = "说明：请填写【水费金额】列，保存后导入系统"
+    ws["A2"].font = Font(name="Microsoft YaHei", size=10, color="DC2626")
+    ws["A2"].alignment = Alignment(horizontal="left", vertical="center")
+    
+    # 表头
+    headers = [
+        "楼栋ID*", "楼栋", "房号*", "房间名称", "水费金额*", "备注"
+    ]
+    ws.append(headers)
+    _style_header(ws, row=3)
+    
+    # 填充现有房间数据
+    for room_data in rooms_data:
+        ws.append([
+            room_data.get("building_id", ""),
+            room_data.get("building_no", ""),
+            room_data.get("room_no", ""),
+            room_data.get("room_name", ""),
+            "",  # 待填写
+            ""
+        ])
+    
+    # 设置列宽和边框
+    for col_idx in range(1, 7):
+        for row_idx in range(3, ws.max_row + 1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.border = BORDER
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+    
+    ws.column_dimensions["A"].width = 10
+    ws.column_dimensions["B"].width = 12
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 20
+    ws.column_dimensions["E"].width = 15
+    ws.column_dimensions["F"].width = 30
+    
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+    return bio.getvalue()
+
+
+def import_electricity_from_excel(bio: BytesIO, month: date) -> Dict:
+    """
+    从Excel导入电费数据
+    
+    返回: {
+        "main_meters": [...],  # 总表数据
+        "ac_meters": [...],    # 空调表数据
+        "errors": [...]        # 错误信息
+    }
+    """
+    wb = openpyxl.load_workbook(bio, data_only=True)
+    ws = wb.active
+    
+    main_meters = []
+    ac_meters = []
+    errors = []
+    
+    # 跳过说明行和表头（前3行）
+    for i, row in enumerate(ws.iter_rows(min_row=4, values_only=True), start=4):
+        if not any(row):
+            continue
+        
+        try:
+            building_id = row[0]
+            room_no = str(row[2] or "").strip()
+            main_current_reading = row[5]
+            
+            room_id = row[6]
+            ac_current_reading = row[11]
+            remark = str(row[12] or "").strip() if len(row) > 12 else ""
+            
+            # 如果有总表数据
+            if building_id and room_no and main_current_reading:
+                try:
+                    main_meters.append({
+                        "building_id": int(building_id),
+                        "room_no": room_no,
+                        "current_reading": float(main_current_reading),
+                        "meter_no": str(row[3] or "").strip() or None,
+                        "remark": remark or None,
+                    })
+                except (ValueError, TypeError) as e:
+                    errors.append({"row": i, "msg": f"总表数据格式错误: {str(e)}"})
+            
+            # 如果有空调表数据
+            if room_id and ac_current_reading:
+                try:
+                    ac_meters.append({
+                        "room_id": int(room_id),
+                        "ac_current_reading": float(ac_current_reading),
+                        "ac_meter_no": str(row[9] or "").strip() or None,
+                    })
+                except (ValueError, TypeError) as e:
+                    errors.append({"row": i, "msg": f"空调表数据格式错误: {str(e)}"})
+        
+        except Exception as e:
+            errors.append({"row": i, "msg": f"解析错误: {str(e)}"})
+    
+    return {
+        "main_meters": main_meters,
+        "ac_meters": ac_meters,
+        "errors": errors
+    }
+
+
+def import_water_from_excel(bio: BytesIO, month: date) -> Dict:
+    """
+    从Excel导入水费数据
+    
+    返回: {
+        "water_meters": [...],  # 水费数据
+        "errors": [...]         # 错误信息
+    }
+    """
+    wb = openpyxl.load_workbook(bio, data_only=True)
+    ws = wb.active
+    
+    water_meters = []
+    errors = []
+    
+    # 跳过说明行和表头（前3行）
+    for i, row in enumerate(ws.iter_rows(min_row=4, values_only=True), start=4):
+        if not any(row):
+            continue
+        
+        try:
+            building_id = row[0]
+            room_no = str(row[2] or "").strip()
+            total_fee = row[4]
+            remark = str(row[5] or "").strip() if len(row) > 5 else ""
+            
+            if not building_id or not room_no:
+                continue
+            
+            if total_fee is None or total_fee == "":
+                continue
+            
+            try:
+                water_meters.append({
+                    "building_id": int(building_id),
+                    "room_no": room_no,
+                    "total_fee": float(total_fee),
+                    "remark": remark or None,
+                })
+            except (ValueError, TypeError) as e:
+                errors.append({"row": i, "msg": f"数据格式错误: {str(e)}"})
+        
+        except Exception as e:
+            errors.append({"row": i, "msg": f"解析错误: {str(e)}"})
+    
+    return {
+        "water_meters": water_meters,
+        "errors": errors
+    }
+
+
 __all__ = [
     "export_settlement_excel",
     "export_meter_detail_excel",
     "export_water_detail_excel",
+    "export_electricity_template_excel",
+    "export_water_template_excel",
+    "import_electricity_from_excel",
+    "import_water_from_excel",
     "import_employees_from_excel",
     "import_rooms_from_excel",
     "import_residences_from_excel",

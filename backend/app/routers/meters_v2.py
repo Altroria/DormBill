@@ -2,12 +2,18 @@
 from datetime import date
 from decimal import Decimal
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from io import BytesIO
 
 from ..database import get_db
 from ..services.meter_v2_service import MeterV2Service
 from ..services.electricity_calculation_service import ElectricityCalculationService
+from ..services.excel_service import (
+    export_electricity_template_excel,
+    import_electricity_from_excel,
+)
 from ..schemas.meter_v2 import (
     CombinedMeterListResponse,
     MainMeterUpdateRequest,
@@ -462,3 +468,152 @@ def get_enhanced_meter_list(
         })
     
     return EnhancedMeterListResponse(items=items, total=total)
+
+
+@router.get("/export-template")
+def export_electricity_template(
+    month: str = Query(..., description="月份 YYYY-MM"),
+    building_id: Optional[int] = Query(None, description="楼栋ID"),
+    db: Session = Depends(get_db),
+):
+    """导出电费导入模板（Excel）"""
+    from ..models.room_main_meter import RoomMainMeterRecord
+    from ..models.meter import MeterRecord
+    from ..models.room import Room
+    from ..models.building import Building
+    from sqlalchemy import and_
+    
+    month_date = date.fromisoformat(f"{month}-01")
+    
+    # 查询总表记录
+    query = db.query(RoomMainMeterRecord).filter(
+        RoomMainMeterRecord.month == month_date
+    )
+    
+    if building_id:
+        query = query.filter(RoomMainMeterRecord.building_id == building_id)
+    
+    main_meters = query.all()
+    
+    # 构建房间数据
+    rooms_data = []
+    for main_meter in main_meters:
+        building = db.query(Building).filter(Building.id == main_meter.building_id).first()
+        
+        # 获取该房号下所有房间和空调表
+        rooms = db.query(Room).filter(
+            and_(
+                Room.building_id == main_meter.building_id,
+                Room.room_no == main_meter.room_no,
+                Room.status == "active"
+            )
+        ).all()
+        
+        ac_meters_info = []
+        for room in rooms:
+            ac_meter = db.query(MeterRecord).filter(
+                and_(
+                    MeterRecord.room_id == room.id,
+                    MeterRecord.month == month_date
+                )
+            ).first()
+            
+            if ac_meter:
+                ac_meters_info.append({
+                    "room_id": room.id,
+                    "room_unit": room.room_unit,
+                    "room_name": room.room_name,
+                    "ac_meter_no": ac_meter.ac_meter_no,
+                    "ac_previous_reading": float(ac_meter.ac_previous_reading),
+                })
+        
+        rooms_data.append({
+            "building_id": main_meter.building_id,
+            "building_no": building.building_no if building else "",
+            "room_no": main_meter.room_no,
+            "main_meter_no": main_meter.meter_no,
+            "main_previous_reading": float(main_meter.previous_reading),
+            "ac_meters": ac_meters_info,
+        })
+    
+    # 生成Excel
+    excel_bytes = export_electricity_template_excel(
+        month=month_date,
+        building_id=building_id,
+        rooms_data=rooms_data
+    )
+    
+    filename = f"电费导入模板_{month}.xlsx"
+    
+    return StreamingResponse(
+        BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+@router.post("/import-excel")
+async def import_electricity_excel(
+    month: str = Query(..., description="月份 YYYY-MM"),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    """从Excel导入电费数据"""
+    month_date = date.fromisoformat(f"{month}-01")
+    
+    # 读取上传的文件
+    content = await file.read()
+    bio = BytesIO(content)
+    
+    # 解析Excel
+    result = import_electricity_from_excel(bio, month_date)
+    
+    service = MeterV2Service(db)
+    
+    main_success = 0
+    ac_success = 0
+    import_errors = []
+    
+    # 导入总表数据
+    for main_data in result["main_meters"]:
+        try:
+            service.update_main_meter(
+                building_id=main_data["building_id"],
+                room_no=main_data["room_no"],
+                month=month_date,
+                current_reading=Decimal(str(main_data["current_reading"])),
+                meter_no=main_data.get("meter_no"),
+                remark=main_data.get("remark"),
+            )
+            main_success += 1
+        except Exception as e:
+            import_errors.append({
+                "type": "总表",
+                "data": f"{main_data['building_id']}-{main_data['room_no']}",
+                "error": str(e)
+            })
+    
+    # 导入空调表数据
+    for ac_data in result["ac_meters"]:
+        try:
+            service.update_ac_meter(
+                room_id=ac_data["room_id"],
+                month=month_date,
+                ac_current_reading=Decimal(str(ac_data["ac_current_reading"])),
+                ac_meter_no=ac_data.get("ac_meter_no"),
+            )
+            ac_success += 1
+        except Exception as e:
+            import_errors.append({
+                "type": "空调表",
+                "data": f"room_id={ac_data['room_id']}",
+                "error": str(e)
+            })
+    
+    return {
+        "message": f"导入完成：总表 {main_success} 条，空调表 {ac_success} 条",
+        "main_meters_imported": main_success,
+        "ac_meters_imported": ac_success,
+        "parse_errors": result["errors"],
+        "import_errors": import_errors,
+    }

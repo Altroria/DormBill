@@ -55,6 +55,31 @@
           >
             批量保存{{ changedCount > 0 ? ` (${changedCount})` : '' }}
           </el-button>
+          <el-button 
+            :icon="Download"
+            color="#0ea5e9"
+            style="color: white; font-weight: 500; margin-left: 12px;"
+            @click="exportTemplate"
+          >
+            导出模板
+          </el-button>
+          <el-upload
+            ref="uploadRef"
+            :auto-upload="false"
+            :show-file-list="false"
+            :on-change="handleFileChange"
+            accept=".xlsx,.xls"
+            style="display: inline-block; margin-left: 0;"
+          >
+            <el-button 
+              :icon="Upload"
+              :loading="importing"
+              color="#06b6d4"
+              style="color: white; font-weight: 500;"
+            >
+              导入数据
+            </el-button>
+          </el-upload>
         </el-form-item>
       </el-form>
     </el-card>
@@ -182,7 +207,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Check } from '@element-plus/icons-vue'
+import { Search, Check, Download, Upload } from '@element-plus/icons-vue'
 import { waterMeterV2Api, type WaterMeterItem } from '@/api/water_meter_v2'
 import type { Building } from '@/types'
 import { buildingApi } from '@/api/building'
@@ -191,9 +216,11 @@ import { buildingApi } from '@/api/building'
 const loading = ref(false)
 const saving = ref(false)
 const initializing = ref(false)
+const importing = ref(false)
 const hasSearched = ref(false)
 const buildings = ref<Building[]>([])
 const waterMeterData = ref<WaterMeterItem[]>([])
+const uploadRef = ref()
 
 // 筛选表单
 const filterForm = reactive({
@@ -367,6 +394,76 @@ onMounted(() => {
   const now = new Date()
   filterForm.month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 })
+
+// 导出模板
+const exportTemplate = () => {
+  if (!filterForm.month) {
+    ElMessage.warning('请选择月份')
+    return
+  }
+
+  const url = waterMeterV2Api.exportTemplate({
+    month: filterForm.month,
+    building_id: filterForm.buildingId,
+  })
+  
+  // 创建隐藏的下载链接
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `水费导入模板_${filterForm.month}.xlsx`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  
+  ElMessage.success('模板下载成功')
+}
+
+// 处理文件选择
+const handleFileChange = async (file: any) => {
+  if (!filterForm.month) {
+    ElMessage.warning('请先选择月份')
+    return
+  }
+
+  try {
+    importing.value = true
+    
+    const result = await waterMeterV2Api.importExcel(filterForm.month, file.raw)
+    
+    // 显示导入结果
+    const errorMessages = []
+    
+    if (result.parse_errors && result.parse_errors.length > 0) {
+      errorMessages.push(`解析错误 ${result.parse_errors.length} 条`)
+    }
+    
+    if (result.import_errors && result.import_errors.length > 0) {
+      errorMessages.push(`导入错误 ${result.import_errors.length} 条`)
+    }
+    
+    if (errorMessages.length > 0) {
+      ElMessageBox.alert(
+        `${result.message}\n\n错误详情：\n${errorMessages.join('\n')}`,
+        '导入完成（有错误）',
+        { type: 'warning' }
+      )
+    } else {
+      ElMessage.success(result.message)
+    }
+    
+    // 重新加载数据
+    await loadData()
+  } catch (error: any) {
+    ElMessage.error(error.message || '导入失败')
+  } finally {
+    importing.value = false
+    // 清空文件选择
+    if (uploadRef.value) {
+      uploadRef.value.clearFiles()
+    }
+  }
+}
+
 </script>
 
 <style scoped lang="scss">

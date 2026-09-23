@@ -217,5 +217,31 @@ export const meterV2Api = {
     limit?: number
   }): Promise<EnhancedMeterListResponse> {
     return get('/meters-v2/list-enhanced', params)
+  },
+
+  // 导出电费导入模板
+  exportTemplate(params: {
+    month: string
+    building_id?: number
+  }): string {
+    const queryString = new URLSearchParams(params as any).toString()
+    return `/api/meters-v2/export-template?${queryString}`
+  },
+
+  // 导入电费Excel
+  async importExcel(month: string, file: File): Promise<any> {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await fetch(`/api/meters-v2/import-excel?month=${month}`, {
+      method: 'POST',
+      body: formData,
+    })
+    
+    if (!response.ok) {
+      throw new Error('导入失败')
+    }
+    
+    return response.json()
   }
 }
