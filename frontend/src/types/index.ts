@@ -34,7 +34,7 @@ export interface Room {
   ac_meter_no?: string;
   electricity_price: number;
   rent_standard: number;
-  status: 'active' | 'inactive';
+  status: 'idle' | 'occupied';  // 动态计算：空闲 | 已入住
   remark?: string;
   created_at?: string;
 }
@@ -196,13 +196,14 @@ export interface DashboardData {
     probation_end: string;
     days_left: number;
   }>;
-  recent_water: Array<{
+  idle_rooms: Array<{
     id: number;
     building_id: number;
-    period_start: string;
-    period_end: string;
-    total_amount: number;
-    status: string;
+    building_no: string;
+    building_name: string;
+    room_no: string;
+    room_name: string;
+    rent_standard: number;
   }>;
 }
 

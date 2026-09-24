@@ -1,11 +1,12 @@
 """房间 API"""
 from typing import Optional
+from datetime import date
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 
 from ..database import get_db
-from ..models import Room, Building
+from ..models import Room, Building, ResidenceRecord
 from ..schemas.room import (
     RoomCreate, RoomUpdate, RoomResponse, RoomListResponse, RoomBatchCreate,
 )
@@ -15,12 +16,33 @@ from ..utils.exceptions import NotFoundError, DuplicateError
 router = APIRouter()
 
 
-def _to_response(room: Room, building: Building | None) -> RoomResponse:
-    """转换为响应对象（附带楼栋信息）"""
+def _get_room_status(room_id: int, db: Session) -> str:
+    """根据入住记录计算房间状态"""
+    today = date.today()
+    # 查询是否有当前有效的入住记录
+    has_resident = db.query(ResidenceRecord).filter(
+        and_(
+            ResidenceRecord.room_id == room_id,
+            ResidenceRecord.status != "invalid",
+            ResidenceRecord.check_in_date <= today,
+            or_(
+                ResidenceRecord.check_out_date.is_(None),
+                ResidenceRecord.check_out_date >= today,
+            ),
+        )
+    ).first()
+    return "occupied" if has_resident else "idle"
+
+
+def _to_response(room: Room, building: Building | None, db: Session = None) -> RoomResponse:
+    """转换为响应对象（附带楼栋信息和动态状态）"""
     data = RoomResponse.model_validate(room)
     if building:
         data.building_no = building.building_no
         data.building_name = building.name
+    # 动态计算状态
+    if db:
+        data.status = _get_room_status(room.id, db)
     return data
 
 
@@ -34,7 +56,6 @@ def list_rooms(
     db: Session = Depends(get_db),
 ):
     """房间列表"""
-    print(f"[DEBUG] 房间列表查询参数: building_id={building_id}, keyword={keyword}, status={status}, skip={skip}, limit={limit}")
     query = db.query(Room, Building).join(
         Building, Room.building_id == Building.id
     ).filter(Room.deleted_at.is_(None))
@@ -45,18 +66,28 @@ def list_rooms(
         query = query.filter(
             or_(Room.room_no.like(kw), Room.room_name.like(kw))
         )
-    if status:
-        query = query.filter(Room.status == status)
     
-    # 获取总数
-    total = query.count()
-    
-    # 分页查询
+    # 先查询所有房间
     query = query.order_by(
         Building.building_no.asc(), Room.room_no.asc(), Room.room_name.asc(),
     )
-    rows = query.offset(skip).limit(limit).all()
-    items = [_to_response(r, b) for r, b in rows]
+    all_rows = query.all()
+    
+    # 计算每个房间的动态状态
+    items_with_status = []
+    for room, building in all_rows:
+        room_data = _to_response(room, building, db)
+        items_with_status.append(room_data)
+    
+    # 根据状态筛选
+    if status:
+        items_with_status = [item for item in items_with_status if item.status == status]
+    
+    # 获取总数
+    total = len(items_with_status)
+    
+    # 分页
+    items = items_with_status[skip:skip + limit]
     return {"items": items, "total": total}
 
 
@@ -82,7 +113,7 @@ def create_room(data: RoomCreate, db: Session = Depends(get_db)):
     db.add(room)
     db.commit()
     db.refresh(room)
-    return _to_response(room, building)
+    return _to_response(room, building, db)
 
 
 @router.post("/batch", response_model=RoomListResponse)
@@ -112,7 +143,7 @@ def batch_create_rooms(data: RoomBatchCreate, db: Session = Depends(get_db)):
     db.commit()
     for r in created:
         db.refresh(r)
-    items = [_to_response(r, building) for r in created]
+    items = [_to_response(r, building, db) for r in created]
     return {"items": items, "total": len(items)}
 
 
@@ -125,7 +156,7 @@ def get_room(room_id: int, db: Session = Depends(get_db)):
     if not row:
         raise NotFoundError(f"房间不存在: {room_id}")
     room, building = row
-    return _to_response(room, building)
+    return _to_response(room, building, db)
 
 
 @router.put("/{room_id}", response_model=RoomResponse)
@@ -142,7 +173,7 @@ def update_room(room_id: int, data: RoomUpdate, db: Session = Depends(get_db)):
         setattr(room, k, v)
     db.commit()
     db.refresh(room)
-    return _to_response(room, building)
+    return _to_response(room, building, db)
 
 
 @router.delete("/{room_id}")

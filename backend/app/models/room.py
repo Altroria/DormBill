@@ -27,8 +27,6 @@ class Room(Base):
                               comment="默认水价")
     rent_standard = Column(Numeric(10, 2), default=Decimal("0.00"),
                            comment="房租标准")
-    status = Column(Enum("active", "inactive", name="room_status"),
-                    default="active")
     remark = Column(String(500), nullable=True)
 
     created_at = Column(DateTime, server_default=func.now())

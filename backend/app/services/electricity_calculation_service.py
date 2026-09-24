@@ -83,24 +83,55 @@ class ElectricityCalculationService:
                 'total_occupants': 0,
             }
         
-        # 6. 分摊公共用电费用（按人数）
-        n = len(occupants)
-        common_fee_allocations = allocate_with_remainder(common_fee, n)
+        # 6. 分摊公共用电费用（按实际入住天数比例）
+        # 计算每个人的入住天数
+        occupant_days = []
+        for occupant in occupants:
+            days = stay_days_in_month(occupant.check_in_date, occupant.check_out_date, month)
+            occupant_days.append(days)
         
-        # 7. 为每个人计算套间空调费用
+        total_days = sum(occupant_days)
+        
+        if total_days == 0:
+            # 没有有效入住天数，直接保存并返回
+            self.db.commit()
+            return {
+                'main_meter_id': main_meter.id,
+                'common_degree': float(common_degree),
+                'common_fee': float(common_fee),
+                'total_ac_degree': float(total_ac_degree),
+                'total_ac_fee': float(total_ac_fee),
+                'distributions': [],
+                'total_occupants': 0,
+            }
+        
+        # 按天数比例分摊公共电费
+        common_fee_allocations = []
+        allocated_sum = Decimal("0")
+        for i, days in enumerate(occupant_days):
+            if i == len(occupant_days) - 1:
+                # 最后一人承担尾差
+                allocation = common_fee - allocated_sum
+            else:
+                allocation = round_money(common_fee * Decimal(days) / Decimal(total_days))
+                allocated_sum += allocation
+            common_fee_allocations.append(allocation)
+        
+        # 7. 为每个人计算套间空调费用（按天数比例分摊）
         distributions = []
         for idx, occupant in enumerate(occupants):
             room_id = occupant.room_id
+            occupant_stay_days = occupant_days[idx]
             
             # 找到该套间的空调表
             ac_meter = next((m for m in ac_meters if m.room_id == room_id), None)
             
             if ac_meter:
-                # 获取该套间的入住人数
-                room_occupants = [o for o in occupants if o.room_id == room_id]
+                # 获取该套间的入住人数及天数
+                room_occupants = [(o, occupant_days[i]) for i, o in enumerate(occupants) if o.room_id == room_id]
                 
                 # 检查是否有主缴费人
-                primary_payers = [o for o in room_occupants if o.is_primary_payer == 1]
+                primary_payers = [o for o, days in room_occupants if o.is_primary_payer == 1]
                 
                 if primary_payers:
                     # 夫妻间：只有主缴费人承担空调费
@@ -109,14 +140,14 @@ class ElectricityCalculationService:
                     else:
                         personal_ac_fee = Decimal("0")
                 else:
-                    # 普通情况：按套间人数分摊空调费
-                    room_occupants_count = len(room_occupants)
-                    ac_fee_allocations = allocate_with_remainder(
-                        to_decimal(ac_meter.ac_fee),
-                        room_occupants_count
-                    )
-                    room_idx = room_occupants.index(occupant)
-                    personal_ac_fee = ac_fee_allocations[room_idx]
+                    # 普通情况：按套间内各人的入住天数比例分摊空调费
+                    room_total_days = sum(days for o, days in room_occupants)
+                    if room_total_days > 0:
+                        # 按天数比例分摊
+                        ac_fee_total = to_decimal(ac_meter.ac_fee)
+                        personal_ac_fee = round_money(ac_fee_total * Decimal(occupant_stay_days) / Decimal(room_total_days))
+                    else:
+                        personal_ac_fee = Decimal("0")
             else:
                 personal_ac_fee = Decimal("0")
             
@@ -127,6 +158,7 @@ class ElectricityCalculationService:
             distributions.append({
                 'employee_id': occupant.employee_id,
                 'room_id': occupant.room_id,
+                'stay_days': occupant_stay_days,
                 'common_electricity_fee': round_money(personal_common_fee),
                 'ac_electricity_fee': round_money(personal_ac_fee),
                 'total_electricity_fee': round_money(personal_total_fee),
@@ -145,7 +177,8 @@ class ElectricityCalculationService:
             'total_ac_fee': float(total_ac_fee),
             'distributions': distributions,
             'total_occupants': n,
-            'common_fee_per_person': float(round_money(common_fee / n)) if n > 0 else 0,
+            'total_stay_days': total_days,
+            'common_fee_per_person_day': float(round_money(common_fee / total_days)) if total_days > 0 else 0,
         }
     
     def calculate_all_meters(
@@ -247,9 +280,8 @@ class ElectricityCalculationService:
         获取房号内所有有效入住人员
         
         有效入住：
-        - 状态为 valid
+        - 状态为 valid 或 leave（已搬离也参与分摊）
         - 在该月有入住天数
-        - 非出差状态参与电费分摊
         """
         # 查询该房号下所有房间
         rooms = (
@@ -269,13 +301,13 @@ class ElectricityCalculationService:
         if not room_ids:
             return []
         
-        # 查询入住记录
+        # 查询入住记录（包括已搬离的）
         records = (
             self.db.query(ResidenceRecord)
             .filter(
                 and_(
                     ResidenceRecord.room_id.in_(room_ids),
-                    ResidenceRecord.status.in_(["valid", "business_trip"]),
+                    ResidenceRecord.status.in_(["valid", "business_trip", "leave"]),
                 )
             )
             .all()

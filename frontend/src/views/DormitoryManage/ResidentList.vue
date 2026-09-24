@@ -231,6 +231,29 @@
           />
         </el-form-item>
 
+        <el-form-item label="搬离日期" v-if="form.status === 'leave'">
+          <el-date-picker
+            v-model="form.check_out_date"
+            type="date"
+            placeholder="选择搬离日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+            clearable
+          />
+        </el-form-item>
+        
+        <el-form-item label="搬离日期" v-else>
+          <el-input
+            :value="form.check_out_date || '未搬离'"
+            disabled
+            style="width: 100%"
+          />
+          <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+            仅已搬离状态可编辑搬离日期
+          </div>
+        </el-form-item>
+
         <el-form-item label="前3个月免租">
           <el-checkbox v-model="form.free_rent_enabled">
             勾选后前3个月免房租（严格按天计算）
@@ -245,7 +268,7 @@
         </el-form-item>
 
         <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
+          <el-radio-group v-model="form.status" @change="handleStatusChange">
             <el-radio value="valid">在住</el-radio>
             <el-radio value="business_trip">出差</el-radio>
             <el-radio value="leave">已搬离</el-radio>
@@ -378,6 +401,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onActivated } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Search, Plus, SwitchButton, Position } from '@element-plus/icons-vue'
 import { residenceApi } from '@/api/residence'
@@ -385,6 +409,8 @@ import { buildingApi } from '@/api/building'
 import { roomApi } from '@/api/room'
 import { employeeApi } from '@/api/employee'
 import type { ResidenceRecord, Building, Room, Employee } from '@/types'
+
+const route = useRoute()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -423,6 +449,7 @@ const form = reactive({
   building_id: undefined as number | undefined,
   room_id: undefined as number | undefined,
   check_in_date: '',
+  check_out_date: '',
   probation_months: 0,
   free_rent_enabled: false,
   is_primary: false,
@@ -573,6 +600,18 @@ const handleTransferBuildingChange = async (buildingId: number) => {
   }
 }
 
+const handleStatusChange = (status: string) => {
+  // 当状态改为非搬离时，清空搬离日期
+  if (status !== 'leave') {
+    form.check_out_date = ''
+  }
+  // 当状态改为搬离时，如果没有搬离日期，设置为今天
+  if (status === 'leave' && !form.check_out_date) {
+    const today = new Date().toISOString().split('T')[0]
+    form.check_out_date = today
+  }
+}
+
 const handleAdd = () => {
   isEdit.value = false
   dialogVisible.value = true
@@ -605,6 +644,7 @@ const handleEdit = async (row: ResidenceRecord) => {
     building_id: row.building_id,
     room_id: row.room_id,
     check_in_date: row.check_in_date,
+    check_out_date: row.check_out_date || '',
     probation_months: row.probation_months,
     free_rent_enabled: row.probation_months === 3,
     is_primary: row.is_primary_payer === 1,
@@ -619,12 +659,19 @@ const handleSubmit = async () => {
   if (!formRef.value) return
   await formRef.value.validate(async (valid) => {
     if (valid) {
+      // 验证：如果状态是已搬离，必须有搬离日期
+      if (form.status === 'leave' && !form.check_out_date) {
+        ElMessage.warning('已搬离状态必须填写搬离日期')
+        return
+      }
+      
       submitting.value = true
       try {
         const submitData = {
           employee_id: form.employee_id,
           room_id: form.room_id,
           check_in_date: form.check_in_date,
+          check_out_date: form.status === 'leave' ? form.check_out_date : null,
           probation_months: form.free_rent_enabled ? 3 : 0,
           is_primary_payer: form.is_primary ? 1 : 0,
           status: form.status,
@@ -745,6 +792,7 @@ const resetForm = () => {
     building_id: undefined,
     room_id: undefined,
     check_in_date: '',
+    check_out_date: '',
     probation_months: 0,
     free_rent_enabled: false,
     is_primary: false,
@@ -760,11 +808,49 @@ onMounted(() => {
   fetchBuildings()
   fetchRooms()
   fetchResidents()
+  
+  // 处理从首页跳转过来的快捷入住
+  if (route.query.action === 'create' && route.query.roomId) {
+    // 延迟一点打开新增对话框，确保数据已加载
+    setTimeout(() => {
+      handleAddWithRoom(Number(route.query.roomId))
+    }, 500)
+  }
 })
 
 onActivated(() => {
   fetchResidents()
 })
+
+// 快捷入住：预填房间信息
+const handleAddWithRoom = async (roomId: number) => {
+  isEdit.value = false
+  
+  // 查找房间信息
+  const room = rooms.value.find(r => r.id === roomId)
+  if (!room) {
+    ElMessage.warning('房间信息未找到')
+    return
+  }
+  
+  // 预填楼栋和房间
+  form.building_id = room.building_id
+  
+  // 加载该楼栋的房间列表
+  try {
+    const res = await roomApi.list({ building_id: room.building_id })
+    availableRooms.value = res.items || res
+    form.room_id = roomId
+  } catch (error) {
+    ElMessage.error('获取房间列表失败')
+  }
+  
+  // 设置默认入住日期为今天
+  const today = new Date().toISOString().split('T')[0]
+  form.check_in_date = today
+  
+  dialogVisible.value = true
+}
 </script>
 
 <style scoped>

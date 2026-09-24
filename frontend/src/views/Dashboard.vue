@@ -118,53 +118,163 @@
       </div>
     </el-card>
 
-    <!-- 最近水费周期 -->
-    <el-card class="recent-water" shadow="never">
+    <!-- 空闲房间列表 -->
+    <el-card class="idle-rooms-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>最近水费周期</span>
-          <el-button text type="primary" @click="$router.push('/water')">
-            进入水费管理 →
+          <span>空闲房间（{{ data?.idle_rooms?.length ?? 0 }}）</span>
+          <el-button text type="primary" @click="$router.push('/dormitory/rooms')">
+            进入房间管理 →
           </el-button>
         </div>
       </template>
-      <el-table :data="data?.recent_water ?? []" empty-text="暂无水费记录">
-        <el-table-column label="楼栋" width="100">
-          <template #default="{ row }">
-            楼栋 #{{ row.building_id }}
-          </template>
-        </el-table-column>
-        <el-table-column label="水费周期" min-width="200">
-          <template #default="{ row }">
-            {{ row.period_start }} ~ {{ row.period_end }}
-          </template>
-        </el-table-column>
-        <el-table-column label="金额" width="120" align="right">
-          <template #default="{ row }">
-            ¥{{ formatMoney(row.total_amount) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="120">
-          <template #default="{ row }">
-            <el-tag :type="waterStatusType(row.status)" effect="light">
-              {{ waterStatusLabel(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div v-if="data?.idle_rooms?.length" class="idle-rooms-grid">
+        <div
+          v-for="room in data.idle_rooms"
+          :key="room.id"
+          class="idle-room-card"
+        >
+          <div class="room-header">
+            <div class="room-info">
+              <div class="room-name">{{ room.building_no }} - {{ room.room_no }}</div>
+              <div class="room-full-name">{{ room.room_name }}</div>
+            </div>
+            <el-tag type="success" effect="light" size="small">空闲</el-tag>
+          </div>
+          <div class="room-rent">
+            <span class="rent-label">房租标准</span>
+            <span class="rent-value">¥{{ formatMoney(room.rent_standard) }}/月</span>
+          </div>
+          <el-button 
+            type="primary" 
+            size="small" 
+            class="checkin-btn"
+            @click="handleQuickCheckIn(room)"
+          >
+            快捷入住
+          </el-button>
+        </div>
+      </div>
+      <el-empty v-else description="暂无空闲房间" :image-size="80" />
     </el-card>
+
+    <!-- 快捷入住对话框 -->
+    <el-dialog
+      v-model="checkInDialogVisible"
+      title="快捷入住"
+      width="600px"
+      @close="resetCheckInForm"
+    >
+      <el-form
+        ref="checkInFormRef"
+        :model="checkInForm"
+        :rules="checkInRules"
+        label-width="100px"
+      >
+        <el-form-item label="房间信息">
+          <el-input
+            :value="`${selectedRoom?.building_no} - ${selectedRoom?.room_no} - ${selectedRoom?.room_name}`"
+            disabled
+          />
+        </el-form-item>
+
+        <el-form-item label="房租标准">
+          <el-input
+            :value="`¥${formatMoney(selectedRoom?.rent_standard)}/月`"
+            disabled
+          />
+        </el-form-item>
+
+        <el-form-item label="员工" prop="employee_id">
+          <el-select
+            v-model="checkInForm.employee_id"
+            placeholder="请选择员工"
+            filterable
+            style="width: 100%"
+            @focus="loadAllEmployees"
+          >
+            <el-option
+              v-for="emp in employees"
+              :key="emp.id"
+              :label="`${emp.name} (${emp.employee_no})`"
+              :value="emp.id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="入住日期" prop="check_in_date">
+          <el-date-picker
+            v-model="checkInForm.check_in_date"
+            type="date"
+            placeholder="选择入住日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+
+        <el-form-item label="前3月免租">
+          <el-checkbox v-model="checkInForm.free_rent_enabled">
+            勾选后前3个月免房租（严格按天计算）
+          </el-checkbox>
+        </el-form-item>
+
+        <el-form-item label="主要缴费人">
+          <el-checkbox v-model="checkInForm.is_primary">设为主要缴费人</el-checkbox>
+        </el-form-item>
+
+        <el-form-item label="备注">
+          <el-input
+            v-model="checkInForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="checkInDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleCheckInSubmit">
+          确定入住
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onActivated } from 'vue';
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { WarningFilled } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { dashboardApi } from '@/api/dashboard';
-import type { DashboardData } from '@/types';
+import { residenceApi } from '@/api/residence';
+import { employeeApi } from '@/api/employee';
+import type { DashboardData, Employee } from '@/types';
 
 const selectedMonth = ref<string>(dayjs().format('YYYY-MM-DD'));
 const data = ref<DashboardData | null>(null);
+const checkInDialogVisible = ref(false);
+const checkInFormRef = ref<FormInstance>();
+const submitting = ref(false);
+const employeeSearching = ref(false);
+const selectedRoom = ref<any>(null);
+const employees = ref<Employee[]>([]);
+
+const checkInForm = ref({
+  employee_id: undefined as number | undefined,
+  room_id: undefined as number | undefined,
+  check_in_date: dayjs().format('YYYY-MM-DD'),
+  free_rent_enabled: false,
+  is_primary: true,
+  remark: ''
+});
+
+const checkInRules: FormRules = {
+  employee_id: [{ required: true, message: '请选择员工', trigger: 'change' }],
+  check_in_date: [{ required: true, message: '请选择入住日期', trigger: 'change' }]
+};
 
 const meterProgressPercent = computed(() => {
   if (!data.value?.summary.meter_progress) return 0;
@@ -185,14 +295,83 @@ function formatMoney(v?: number) {
   return num.toFixed(2)
 }
 
-function waterStatusType(s: string): 'success' | 'warning' | 'info' {
-  if (s === 'settled') return 'success';
-  if (s === 'allocated') return 'warning';
-  return 'info';
+function handleQuickCheckIn(room: any) {
+  selectedRoom.value = room;
+  checkInForm.value.room_id = room.id;
+  checkInForm.value.check_in_date = dayjs().format('YYYY-MM-DD');
+  loadAllEmployees();
+  checkInDialogVisible.value = true;
 }
 
-function waterStatusLabel(s: string) {
-  return { pending: '未录入', allocated: '已分摊', settled: '已结算' }[s] || s;
+async function loadAllEmployees() {
+  if (employees.value.length > 0) return; // 已加载过就不重复加载
+  employeeSearching.value = true;
+  try {
+    const res = await employeeApi.list({ page_size: 500 });
+    employees.value = res.items || [];
+  } catch (error) {
+    ElMessage.error('加载员工列表失败');
+  } finally {
+    employeeSearching.value = false;
+  }
+}
+
+async function searchEmployees(query: string) {
+  if (!query) {
+    loadAllEmployees();
+    return;
+  }
+  employeeSearching.value = true;
+  try {
+    const res = await employeeApi.list({ keyword: query });
+    employees.value = res.items || res;
+  } catch (error) {
+    ElMessage.error('搜索员工失败');
+  } finally {
+    employeeSearching.value = false;
+  }
+}
+
+async function handleCheckInSubmit() {
+  if (!checkInFormRef.value) return;
+  await checkInFormRef.value.validate(async (valid) => {
+    if (valid) {
+      submitting.value = true;
+      try {
+        const submitData = {
+          employee_id: checkInForm.value.employee_id,
+          room_id: checkInForm.value.room_id,
+          check_in_date: checkInForm.value.check_in_date,
+          check_out_date: null,
+          probation_months: checkInForm.value.free_rent_enabled ? 3 : 0,
+          is_primary_payer: checkInForm.value.is_primary ? 1 : 0,
+          status: 'valid',
+          remark: checkInForm.value.remark || ''
+        };
+        await residenceApi.create(submitData);
+        ElMessage.success('入住成功');
+        checkInDialogVisible.value = false;
+        loadData(); // 刷新数据
+      } catch (error) {
+        ElMessage.error('入住失败');
+      } finally {
+        submitting.value = false;
+      }
+    }
+  });
+}
+
+function resetCheckInForm() {
+  checkInForm.value = {
+    employee_id: undefined,
+    room_id: undefined,
+    check_in_date: dayjs().format('YYYY-MM-DD'),
+    free_rent_enabled: false,
+    is_primary: true,
+    remark: ''
+  };
+  selectedRoom.value = null;
+  checkInFormRef.value?.resetFields();
 }
 
 async function loadData() {
@@ -343,12 +522,81 @@ onActivated(loadData);
   }
 }
 
-.recent-water {
+.idle-rooms-card {
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
+  }
+}
+
+.idle-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.idle-room-card {
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #F8FAFC;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #10B981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .room-info {
+    flex: 1;
+
+    .room-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1E293B;
+      margin-bottom: 4px;
+    }
+
+    .room-full-name {
+      font-size: 0.875rem;
+      color: #64748B;
+    }
+  }
+
+  .room-rent {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #fff;
+    border-radius: 6px;
+    margin-bottom: 12px;
+
+    .rent-label {
+      font-size: 0.8125rem;
+      color: #64748B;
+    }
+
+    .rent-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #10B981;
+      font-family: 'DIN Alternate', monospace;
+    }
+  }
+
+  .checkin-btn {
+    width: 100%;
   }
 }
 </style>

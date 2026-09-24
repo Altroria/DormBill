@@ -62,8 +62,8 @@
       </el-table-column>
       <el-table-column label="状态" width="80" align="center">
         <template #default="{ row }">
-          <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-            {{ row.status === 'active' ? '启用' : '禁用' }}
+          <el-tag :type="getStatusType(row.status)">
+            {{ getStatusLabel(row.status) }}
           </el-tag>
         </template>
       </el-table-column>
@@ -144,13 +144,6 @@
             :min="0"
             style="width: 100%"
           />
-        </el-form-item>
-
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio value="active">启用</el-radio>
-            <el-radio value="inactive">禁用</el-radio>
-          </el-radio-group>
         </el-form-item>
 
         <el-form-item label="备注">
@@ -303,6 +296,22 @@ const formatNumber = (value: any, decimals: number = 2, defaultValue: string = '
   return num.toFixed(decimals)
 }
 
+const getStatusType = (status: string) => {
+  const map: Record<string, any> = {
+    idle: 'success',
+    occupied: 'warning'
+  }
+  return map[status] || 'info'
+}
+
+const getStatusLabel = (status: string) => {
+  const map: Record<string, string> = {
+    idle: '空闲',
+    occupied: '已入住'
+  }
+  return map[status] || status
+}
+
 const filters = reactive({
   buildingId: undefined as number | undefined,
   search: ''
@@ -316,7 +325,6 @@ const form = reactive({
   room_name: '',
   electricity_price: 0.49,
   rent_standard: 0,
-  status: 'active' as 'active' | 'inactive',
   remark: ''
 })
 
@@ -386,7 +394,6 @@ const handleEdit = (row: Room) => {
     room_name: row.room_name,
     electricity_price: row.electricity_price,
     rent_standard: row.rent_standard,
-    status: row.status,
     remark: row.remark || ''
   })
   dialogVisible.value = true
@@ -491,7 +498,6 @@ const resetForm = () => {
     room_name: '',
     electricity_price: 0.49,
     rent_standard: 0,
-    status: 'active',
     remark: ''
   })
   formRef.value?.resetFields()

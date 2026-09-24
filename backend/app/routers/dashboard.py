@@ -32,7 +32,7 @@ def dashboard(
         Building.deleted_at.is_(None), Building.status == "active"
     ).count()
     room_count = db.query(Room).filter(
-        Room.deleted_at.is_(None), Room.status == "active"
+        Room.deleted_at.is_(None)
     ).count()
     employee_count = db.query(Employee).filter(
         Employee.deleted_at.is_(None), Employee.status == "active"
@@ -87,26 +87,40 @@ def dashboard(
     total_water = sum(float(s.water_fee or 0) for s in settlements)
     total_deduction = sum(float(s.total_amount or 0) for s in settlements)
 
-    # 水表统计
-    month_water_meter_count = db.query(WaterMeterRecord).filter(
-        WaterMeterRecord.month == target_month
-    ).count()
-    water_meter_progress = f"{month_water_meter_count}/{total_rooms}"
+    # 空闲房间列表（没有当前有效入住记录的房间）
+    today = date.today()
+    all_rooms = db.query(Room, Building).join(
+        Building, Room.building_id == Building.id
+    ).filter(Room.deleted_at.is_(None)).all()
     
-    # 近期水表记录
-    recent_water = db.query(WaterMeterRecord).filter(
-        WaterMeterRecord.month == target_month
-    ).order_by(WaterMeterRecord.created_at.desc()).limit(10).all()
-    water_summary = [
-        {
-            "id": we.id,
-            "building_id": we.building_id,
-            "room_no": we.room_no,
-            "month": we.month.isoformat(),
-            "total_fee": float(we.total_fee) if we.total_fee else 0,
-        }
-        for we in recent_water
-    ]
+    idle_room_list = []
+    for room, building in all_rooms:
+        # 查询是否有当前有效的入住记录
+        has_resident = db.query(ResidenceRecord).filter(
+            and_(
+                ResidenceRecord.room_id == room.id,
+                ResidenceRecord.status != "invalid",
+                ResidenceRecord.check_in_date <= today,
+                or_(
+                    ResidenceRecord.check_out_date.is_(None),
+                    ResidenceRecord.check_out_date >= today,
+                ),
+            )
+        ).first()
+        
+        if not has_resident:
+            idle_room_list.append({
+                "id": room.id,
+                "building_id": room.building_id,
+                "building_no": building.building_no,
+                "building_name": building.name,
+                "room_no": room.room_no,
+                "room_name": room.room_name,
+                "rent_standard": float(room.rent_standard) if room.rent_standard else 0,
+            })
+        
+        if len(idle_room_list) >= 20:
+            break
 
     return {
         "current_month": target_month.isoformat()[:7],
@@ -116,7 +130,6 @@ def dashboard(
             "employee_count": employee_count,
             "current_residents": current_residents,
             "meter_progress": meter_progress,
-            "water_meter_progress": water_meter_progress,
         },
         "amounts": {
             "rent_total": round(total_rent, 2),
@@ -126,7 +139,7 @@ def dashboard(
             "settlement_total": round(total_deduction, 2),
         },
         "probation_expiring": probation_expiring,
-        "recent_water": water_summary,
+        "idle_rooms": idle_room_list,
     }
 
 

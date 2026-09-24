@@ -200,7 +200,14 @@ def batch_move_out(data: BatchMoveOut, db: Session = Depends(get_db)):
 
 @router.post("/batch-transfer")
 def batch_transfer(data: BatchTransfer, db: Session = Depends(get_db)):
-    """批量换房"""
+    """
+    批量换房
+    
+    transfer_date: 换房日期（入住新房的日期）
+    - 旧房：check_out_date = transfer_date - 1天（最后一天住旧房）
+    - 新房：check_in_date = transfer_date（第一天住新房）
+    """
+    from datetime import timedelta
     transfer_date = parse_date(data.transfer_date)
     transferred = 0
     for item in data.items:
@@ -212,17 +219,17 @@ def batch_transfer(data: BatchTransfer, db: Session = Depends(get_db)):
         target_room = db.query(Room).filter(Room.id == item.target_room_id).first()
         if not target_room:
             continue
-        # 旧记录搬离
-        old_res.check_out_date = transfer_date
-        old_res.status = "invalid"
+        # 旧记录搬离（最后一天是换房日期的前一天）
+        old_res.check_out_date = transfer_date - timedelta(days=1)
+        old_res.status = "leave"  # 改为leave状态，而非invalid
         # 新记录入住
         new_res = ResidenceRecord(
             employee_id=old_res.employee_id,
             room_id=item.target_room_id,
             check_in_date=transfer_date,
             check_out_date=None,
-            is_primary_payer=0,
-            probation_months=0,
+            is_primary_payer=old_res.is_primary_payer,  # 继承主缴费人状态
+            probation_months=0,  # 换房不享受试用期
             status="valid",
             remark=old_res.remark,
         )

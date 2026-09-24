@@ -134,7 +134,7 @@ def get_employee_water_fee_for_month(
     逻辑：
     1. 查询该员工当月的有效入住记录
     2. 获取对应房间的水表记录
-    3. 按入住人数平分
+    3. 按实际入住天数比例分摊
     """
     target_month = month_start(target_month)
     
@@ -173,33 +173,51 @@ def get_employee_water_fee_for_month(
     if not water_record or not water_record.total_fee:
         return Decimal("0")
     
-    # 查询该房间当月所有有效入住人数
-    all_residences = db.query(ResidenceRecord).filter(
+    # 查询该房号下所有房间的所有有效入住人员（包括已搬离的）
+    rooms_in_same_no = db.query(Room).filter(
         and_(
-            ResidenceRecord.room_id == residence.room_id,
-            ResidenceRecord.status != "invalid",
+            Room.building_id == room.building_id,
+            Room.room_no == room.room_no,
+            Room.deleted_at.is_(None),
         )
     ).all()
     
-    # 统计有效人数（当月住满15天以上）
-    valid_count = 0
+    room_ids_in_same_no = [r.id for r in rooms_in_same_no]
+    
+    all_residences = db.query(ResidenceRecord).filter(
+        and_(
+            ResidenceRecord.room_id.in_(room_ids_in_same_no),
+            ResidenceRecord.status.in_(["valid", "business_trip", "leave"]),
+        )
+    ).all()
+    
+    # 计算每个人的入住天数和总天数
+    total_days = 0
+    employee_days = {}
+    
     for res in all_residences:
         res_days = stay_days_in_month(res.check_in_date, res.check_out_date, target_month)
-        if res_days > 15:  # 半月规则
+        if res_days > 0:
             # 排除出差等特殊情况
             if res.remark and "出差" in res.remark:
                 continue
-            # 排除非主缴费人（夫妻同住只收一人）
-            if not res.is_primary_payer:
+            # 夫妻同住：非主缴费人不计算
+            if res.is_primary_payer == 0:
                 continue
-            valid_count += 1
+            
+            employee_days[res.employee_id] = res_days
+            total_days += res_days
     
-    if valid_count == 0:
+    if total_days == 0:
         return Decimal("0")
     
-    # 平均分摊
+    # 按天数比例计算该员工的水费
+    if employee_id not in employee_days:
+        return Decimal("0")
+    
     total_fee = to_decimal(water_record.total_fee)
-    per_person_fee = round_money(total_fee / valid_count)
+    employee_day_count = employee_days[employee_id]
+    per_person_fee = round_money(total_fee * Decimal(employee_day_count) / Decimal(total_days))
     
     return per_person_fee
 
