@@ -27,6 +27,7 @@ class Room(Base):
                               comment="默认水价")
     rent_standard = Column(Numeric(10, 2), default=Decimal("0.00"),
                            comment="房租标准")
+    is_guest_room = Column(BigInteger, default=0, comment="是否为客房（客房水电租全免）")
     remark = Column(String(500), nullable=True)
 
     created_at = Column(DateTime, server_default=func.now())

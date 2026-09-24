@@ -289,185 +289,191 @@ def get_enhanced_meter_list(
     """
     获取增强的电表列表（包含公共用电、人均费用等统计信息）- 优化版
     """
-    from sqlalchemy import and_, func as sql_func
-    from ..models.room_main_meter import RoomMainMeterRecord
-    from ..models.meter import MeterRecord
-    from ..models.room import Room
-    from ..models.building import Building
-    from ..models.residence import ResidenceRecord
-    from ..utils.date_utils import month_start, stay_days_in_month
-    
-    # 转换月份字符串为date对象
-    month_date = date.fromisoformat(f"{month}-01")
-    
-    # 查询总表记录
-    query = db.query(RoomMainMeterRecord).filter(
-        RoomMainMeterRecord.month == month_date
-    )
-    
-    if building_id:
-        query = query.filter(RoomMainMeterRecord.building_id == building_id)
-    
-    if room_no:
-        query = query.filter(RoomMainMeterRecord.room_no.like(f"%{room_no}%"))
-    
-    # 总数
-    total = query.count()
-    
-    # 分页
-    main_meters = query.offset(skip).limit(limit).all()
-    
-    # 批量预加载数据，避免N+1查询
-    building_ids = list(set(m.building_id for m in main_meters))
-    room_filters = [(m.building_id, m.room_no) for m in main_meters]
-    
-    # 批量查询楼栋
-    buildings_dict = {
-        b.id: b for b in db.query(Building).filter(Building.id.in_(building_ids)).all()
-    } if building_ids else {}
-    
-    # 批量查询空调表
-    ac_meters_list = []
-    if room_filters:
-        for bldg_id, rm_no in room_filters:
-            ac_meters = (
-                db.query(MeterRecord)
-                .join(Room, Room.id == MeterRecord.room_id)
-                .filter(
-                    and_(
-                        MeterRecord.building_id == bldg_id,
-                        Room.room_no == rm_no,
-                        MeterRecord.month == month_date,
-                    )
-                )
-                .all()
-            )
-            ac_meters_list.append(((bldg_id, rm_no), ac_meters))
-    
-    ac_meters_dict = dict(ac_meters_list)
-    
-    # 批量查询房间
-    rooms_list = []
-    if room_filters:
-        for bldg_id, rm_no in room_filters:
-            rooms = (
-                db.query(Room)
-                .filter(
-                    and_(
-                        Room.building_id == bldg_id,
-                        Room.room_no == rm_no,
-                        Room.status == "active",
-                    )
-                )
-                .all()
-            )
-            rooms_list.append(((bldg_id, rm_no), rooms))
-    
-    rooms_dict = dict(rooms_list)
-    
-    # 批量查询所有相关的room_ids的入住记录
-    all_room_ids = []
-    for rooms in rooms_dict.values():
-        all_room_ids.extend([r.id for r in rooms])
-    
-    residence_records_dict = {}
-    if all_room_ids:
-        all_records = (
-            db.query(ResidenceRecord)
-            .filter(
-                and_(
-                    ResidenceRecord.room_id.in_(all_room_ids),
-                    ResidenceRecord.status.in_(["valid", "business_trip"]),
-                )
-            )
-            .all()
+    try:
+        from sqlalchemy import and_, func as sql_func
+        from ..models.room_main_meter import RoomMainMeterRecord
+        from ..models.meter import MeterRecord
+        from ..models.room import Room
+        from ..models.building import Building
+        from ..models.residence import ResidenceRecord
+        from ..utils.date_utils import month_start, stay_days_in_month
+        
+        # 转换月份字符串为date对象
+        month_date = date.fromisoformat(f"{month}-01")
+        
+        # 查询总表记录
+        query = db.query(RoomMainMeterRecord).filter(
+            RoomMainMeterRecord.month == month_date
         )
         
-        # 按room_id分组
-        for record in all_records:
-            if record.room_id not in residence_records_dict:
-                residence_records_dict[record.room_id] = []
-            residence_records_dict[record.room_id].append(record)
-    
-    items = []
-    for main_meter in main_meters:
-        key = (main_meter.building_id, main_meter.room_no)
+        if building_id:
+            query = query.filter(RoomMainMeterRecord.building_id == building_id)
         
-        # 获取楼栋信息
-        building = buildings_dict.get(main_meter.building_id)
+        if room_no:
+            query = query.filter(RoomMainMeterRecord.room_no.like(f"%{room_no}%"))
         
-        # 获取该房号下所有空调表
-        ac_meters = ac_meters_dict.get(key, [])
+        # 总数
+        total = query.count()
         
-        # 空调汇总
-        total_ac_degree = sum(float(m.ac_degree) for m in ac_meters)
-        total_ac_fee = sum(float(m.ac_fee) for m in ac_meters)
+        # 分页
+        main_meters = query.offset(skip).limit(limit).all()
         
-        # 获取房号内所有房间
-        rooms = rooms_dict.get(key, [])
-        room_ids = [r.id for r in rooms]
+        # 批量预加载数据，避免N+1查询
+        building_ids = list(set(m.building_id for m in main_meters))
+        room_filters = [(m.building_id, m.room_no) for m in main_meters]
         
-        # 统计入住人数
-        total_occupants = 0
-        if room_ids:
-            for room_id in room_ids:
-                records = residence_records_dict.get(room_id, [])
-                for r in records:
-                    days = stay_days_in_month(r.check_in_date, r.check_out_date, month_date)
+        # 批量查询楼栋
+        buildings_dict = {
+            b.id: b for b in db.query(Building).filter(Building.id.in_(building_ids)).all()
+        } if building_ids else {}
+        
+        # 批量查询空调表
+        ac_meters_list = []
+        if room_filters:
+            for bldg_id, rm_no in room_filters:
+                ac_meters = (
+                    db.query(MeterRecord)
+                    .join(Room, Room.id == MeterRecord.room_id)
+                    .filter(
+                        and_(
+                            MeterRecord.building_id == bldg_id,
+                            Room.room_no == rm_no,
+                            MeterRecord.month == month_date,
+                        )
+                    )
+                    .all()
+                )
+                ac_meters_list.append(((bldg_id, rm_no), ac_meters))
+        
+        ac_meters_dict = dict(ac_meters_list)
+        
+        # 批量查询房间
+        rooms_list = []
+        if room_filters:
+            for bldg_id, rm_no in room_filters:
+                rooms = (
+                    db.query(Room)
+                    .filter(
+                        and_(
+                            Room.building_id == bldg_id,
+                            Room.room_no == rm_no,
+                            Room.deleted_at.is_(None),
+                        )
+                    )
+                    .all()
+                )
+                rooms_list.append(((bldg_id, rm_no), rooms))
+        
+        rooms_dict = dict(rooms_list)
+        
+        # 批量查询所有相关的room_ids的入住记录
+        all_room_ids = []
+        for rooms in rooms_dict.values():
+            all_room_ids.extend([r.id for r in rooms])
+        
+        residence_records_dict = {}
+        if all_room_ids:
+            all_records = (
+                db.query(ResidenceRecord)
+                .filter(
+                    and_(
+                        ResidenceRecord.room_id.in_(all_room_ids),
+                        ResidenceRecord.status.in_(["valid", "business_trip"]),
+                    )
+                )
+                .all()
+            )
+            
+            # 按room_id分组
+            for record in all_records:
+                if record.room_id not in residence_records_dict:
+                    residence_records_dict[record.room_id] = []
+                residence_records_dict[record.room_id].append(record)
+        
+        items = []
+        for main_meter in main_meters:
+            key = (main_meter.building_id, main_meter.room_no)
+            
+            # 获取楼栋信息
+            building = buildings_dict.get(main_meter.building_id)
+            
+            # 获取该房号下所有空调表
+            ac_meters = ac_meters_dict.get(key, [])
+            
+            # 空调汇总
+            total_ac_degree = sum(float(m.ac_degree) for m in ac_meters)
+            total_ac_fee = sum(float(m.ac_fee) for m in ac_meters)
+            
+            # 获取房号内所有房间
+            rooms = rooms_dict.get(key, [])
+            room_ids = [r.id for r in rooms]
+            
+            # 统计入住人数
+            total_occupants = 0
+            if room_ids:
+                for room_id in room_ids:
+                    records = residence_records_dict.get(room_id, [])
+                    for r in records:
+                        days = stay_days_in_month(r.check_in_date, r.check_out_date, month_date)
+                        if days > 0:
+                            total_occupants += 1
+            
+            # 计算人均公共电费
+            common_fee_per_person = (
+                float(main_meter.common_fee) / total_occupants if total_occupants > 0 else 0
+            )
+            
+            # 构建空调表信息
+            ac_meters_info = []
+            for ac_meter in ac_meters:
+                # 从rooms中查找对应的room
+                room = next((r for r in rooms if r.id == ac_meter.room_id), None)
+                
+                # 统计该套间人数
+                occupants_count = 0
+                occupants = residence_records_dict.get(ac_meter.room_id, [])
+                for occ in occupants:
+                    days = stay_days_in_month(occ.check_in_date, occ.check_out_date, month_date)
                     if days > 0:
-                        total_occupants += 1
-        
-        # 计算人均公共电费
-        common_fee_per_person = (
-            float(main_meter.common_fee) / total_occupants if total_occupants > 0 else 0
-        )
-        
-        # 构建空调表信息
-        ac_meters_info = []
-        for ac_meter in ac_meters:
-            # 从rooms中查找对应的room
-            room = next((r for r in rooms if r.id == ac_meter.room_id), None)
+                        occupants_count += 1
+                
+                ac_meters_info.append({
+                    "room_id": ac_meter.room_id,
+                    "room_unit": room.room_unit if room else None,
+                    "room_name": room.room_name if room else None,
+                    "ac_meter_no": ac_meter.ac_meter_no,
+                    "ac_previous_reading": float(ac_meter.ac_previous_reading),
+                    "ac_current_reading": float(ac_meter.ac_current_reading),
+                    "ac_degree": float(ac_meter.ac_degree),
+                    "ac_fee": float(ac_meter.ac_fee),
+                    "occupants": occupants_count,
+                })
             
-            # 统计该套间人数
-            occupants_count = 0
-            occupants = residence_records_dict.get(ac_meter.room_id, [])
-            for occ in occupants:
-                days = stay_days_in_month(occ.check_in_date, occ.check_out_date, month_date)
-                if days > 0:
-                    occupants_count += 1
-            
-            ac_meters_info.append({
-                "room_id": ac_meter.room_id,
-                "room_unit": room.room_unit if room else None,
-                "room_name": room.room_name if room else None,
-                "ac_meter_no": ac_meter.ac_meter_no,
-                "ac_previous_reading": float(ac_meter.ac_previous_reading),
-                "ac_current_reading": float(ac_meter.ac_current_reading),
-                "ac_degree": float(ac_meter.ac_degree),
-                "ac_fee": float(ac_meter.ac_fee),
-                "occupants": occupants_count,
+            items.append({
+                "building_id": main_meter.building_id,
+                "building_no": building.building_no if building else None,
+                "room_no": main_meter.room_no,
+                "month": main_meter.month,
+                "main_previous_reading": float(main_meter.previous_reading),
+                "main_current_reading": float(main_meter.current_reading),
+                "main_total_degree": float(main_meter.total_degree),
+                "main_total_fee": float(main_meter.total_fee),
+                "common_degree": float(main_meter.common_degree),
+                "common_fee": float(main_meter.common_fee),
+                "total_ac_degree": total_ac_degree,
+                "total_ac_fee": total_ac_fee,
+                "ac_meters": ac_meters_info,
+                "total_occupants": total_occupants,
+                "common_fee_per_person": round(common_fee_per_person, 2),
+                "status": main_meter.status,
             })
         
-        items.append({
-            "building_id": main_meter.building_id,
-            "building_no": building.building_no if building else None,
-            "room_no": main_meter.room_no,
-            "month": main_meter.month,
-            "main_previous_reading": float(main_meter.previous_reading),
-            "main_current_reading": float(main_meter.current_reading),
-            "main_total_degree": float(main_meter.total_degree),
-            "main_total_fee": float(main_meter.total_fee),
-            "common_degree": float(main_meter.common_degree),
-            "common_fee": float(main_meter.common_fee),
-            "total_ac_degree": total_ac_degree,
-            "total_ac_fee": total_ac_fee,
-            "ac_meters": ac_meters_info,
-            "total_occupants": total_occupants,
-            "common_fee_per_person": round(common_fee_per_person, 2),
-            "status": main_meter.status,
-        })
-    
-    return EnhancedMeterListResponse(items=items, total=total)
+        return EnhancedMeterListResponse(items=items, total=total)
+    except Exception as e:
+        import traceback
+        print(f"Error in get_enhanced_meter_list: {e}")
+        print(traceback.format_exc())
+        raise
 
 
 @router.get("/export-template")

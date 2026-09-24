@@ -60,6 +60,12 @@
           ¥{{ formatNumber(row.rent_standard) }}
         </template>
       </el-table-column>
+      <el-table-column label="客房" width="80" align="center">
+        <template #default="{ row }">
+          <el-tag v-if="row.is_guest_room" type="success" size="small">客房</el-tag>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" width="80" align="center">
         <template #default="{ row }">
           <el-tag :type="getStatusType(row.status)">
@@ -144,6 +150,12 @@
             :min="0"
             style="width: 100%"
           />
+        </el-form-item>
+
+        <el-form-item label="客房属性">
+          <el-checkbox v-model="form.is_guest_room" :true-label="1" :false-label="0">
+            是否为客房（客房水电租全免）
+          </el-checkbox>
         </el-form-item>
 
         <el-form-item label="备注">
@@ -325,6 +337,7 @@ const form = reactive({
   room_name: '',
   electricity_price: 0.49,
   rent_standard: 0,
+  is_guest_room: 0,
   remark: ''
 })
 
@@ -394,6 +407,7 @@ const handleEdit = (row: Room) => {
     room_name: row.room_name,
     electricity_price: row.electricity_price,
     rent_standard: row.rent_standard,
+    is_guest_room: row.is_guest_room || 0,
     remark: row.remark || ''
   })
   dialogVisible.value = true
@@ -498,6 +512,7 @@ const resetForm = () => {
     room_name: '',
     electricity_price: 0.49,
     rent_standard: 0,
+    is_guest_room: 0,
     remark: ''
   })
   formRef.value?.resetFields()

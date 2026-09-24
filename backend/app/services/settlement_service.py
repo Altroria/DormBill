@@ -169,20 +169,28 @@ def generate_settlement(
         if not room:
             continue
 
-        # 房租
-        rent_standard = to_decimal(room.rent_standard)
-        rent_actual = calculate_rent_actual_with_overrides(
-            res, rent_standard, target_month,
-        )
+        # 如果是客房，水电租全免
+        if room.is_guest_room:
+            rent_standard = Decimal("0")
+            rent_actual = Decimal("0")
+            elec_fee = Decimal("0")
+            ac_fee = Decimal("0")
+            water_fee = Decimal("0")
+        else:
+            # 房租
+            rent_standard = to_decimal(room.rent_standard)
+            rent_actual = calculate_rent_actual_with_overrides(
+                res, rent_standard, target_month,
+            )
 
-        # 个人电费
-        elec = elec_by_emp.get(emp_id, {"electricity_fee": Decimal("0"), "ac_electricity_fee": Decimal("0")})
-        elec_fee = round_money(elec["electricity_fee"])
-        ac_fee = round_money(elec["ac_electricity_fee"])
+            # 个人电费
+            elec = elec_by_emp.get(emp_id, {"electricity_fee": Decimal("0"), "ac_electricity_fee": Decimal("0")})
+            elec_fee = round_money(elec["electricity_fee"])
+            ac_fee = round_money(elec["ac_electricity_fee"])
 
-        # 个人水费（根据模式选择）
-        include_prev = (water_mode == "double")
-        water_fee = get_employee_water_fee_for_month(db, emp_id, target_month)
+            # 个人水费（根据模式选择）
+            include_prev = (water_mode == "double")
+            water_fee = get_employee_water_fee_for_month(db, emp_id, target_month)
 
         # 最终扣款
         total = calculate_final_amount(
@@ -352,22 +360,30 @@ def calculate_realtime_settlements(
         
         building = db.query(Building).filter(Building.id == room.building_id).first()
         
-        # 房租
-        rent_standard = to_decimal(room.rent_standard)
-        rent_actual = calculate_rent_actual_with_overrides(
-            res, rent_standard, target_month,
-        )
-        
-        # 个人电费
-        elec = elec_by_emp.get(emp_id, {"electricity_fee": Decimal("0"), "ac_electricity_fee": Decimal("0")})
-        elec_fee = round_money(elec["electricity_fee"])
-        ac_fee = round_money(elec["ac_electricity_fee"])
-        
-        # 个人水费（根据水费模式）
-        if water_mode == "none":
+        # 如果是客房，水电租全免
+        if room.is_guest_room:
+            rent_standard = Decimal("0")
+            rent_actual = Decimal("0")
+            elec_fee = Decimal("0")
+            ac_fee = Decimal("0")
             water_fee = Decimal("0")
         else:
-            water_fee = water_by_emp.get(emp_id, Decimal("0"))
+            # 房租
+            rent_standard = to_decimal(room.rent_standard)
+            rent_actual = calculate_rent_actual_with_overrides(
+                res, rent_standard, target_month,
+            )
+            
+            # 个人电费
+            elec = elec_by_emp.get(emp_id, {"electricity_fee": Decimal("0"), "ac_electricity_fee": Decimal("0")})
+            elec_fee = round_money(elec["electricity_fee"])
+            ac_fee = round_money(elec["ac_electricity_fee"])
+            
+            # 个人水费（根据水费模式）
+            if water_mode == "none":
+                water_fee = Decimal("0")
+            else:
+                water_fee = water_by_emp.get(emp_id, Decimal("0"))
         
         # 查询是否有已保存的调整数据
         existing = db.query(MonthlySettlement).filter(
@@ -419,6 +435,7 @@ def calculate_realtime_settlements(
             "room_name": room.room_name,
             "building_id": room.building_id,
             "building_no": building.building_no if building else "",
+            "is_guest_room": room.is_guest_room,
             "rent_should": float(rent_standard),
             "rent_actual": float(rent_actual),
             "stay_days": days,

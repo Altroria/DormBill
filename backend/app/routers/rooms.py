@@ -162,17 +162,24 @@ def get_room(room_id: int, db: Session = Depends(get_db)):
 @router.put("/{room_id}", response_model=RoomResponse)
 def update_room(room_id: int, data: RoomUpdate, db: Session = Depends(get_db)):
     """编辑房间"""
+    print(f"[DEBUG] 收到更新请求 room_id={room_id}")
+    print(f"[DEBUG] 原始数据对象: {data}")
     row = db.query(Room, Building).join(
         Building, Room.building_id == Building.id
     ).filter(and_(Room.id == room_id, Room.deleted_at.is_(None))).first()
     if not row:
         raise NotFoundError(f"房间不存在: {room_id}")
     room, building = row
+    print(f"[DEBUG] 更新前 room.is_guest_room = {room.is_guest_room}")
     update_data = data.model_dump(exclude_unset=True)
+    print(f"[DEBUG] 更新数据字典: {update_data}")
     for k, v in update_data.items():
+        print(f"[DEBUG] 设置 {k} = {v}")
         setattr(room, k, v)
+    print(f"[DEBUG] 更新后 room.is_guest_room = {room.is_guest_room}")
     db.commit()
     db.refresh(room)
+    print(f"[DEBUG] 提交后 room.is_guest_room = {room.is_guest_room}")
     return _to_response(room, building, db)
 
 

@@ -17,6 +17,8 @@ const api: AxiosInstance = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // 添加认证头
+    config.headers.appkey = 'test-auth-key';
     return config;
   },
   (error) => Promise.reject(error)

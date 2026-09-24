@@ -34,6 +34,7 @@ export interface Room {
   ac_meter_no?: string;
   electricity_price: number;
   rent_standard: number;
+  is_guest_room: number;  // 是否为客房（客房水电租全免）
   status: 'idle' | 'occupied';  // 动态计算：空闲 | 已入住
   remark?: string;
   created_at?: string;
@@ -171,6 +172,7 @@ export interface MonthlySettlement {
   room_name?: string;
   building_id?: number;
   building_no?: string;
+  is_guest_room?: number;
 }
 
 /** 仪表盘数据 */

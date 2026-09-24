@@ -147,6 +147,7 @@
       <el-table-column label="楼栋-房号-房间" min-width="200" fixed="left">
         <template #default="{ row }">
           {{ row.building_no }} - {{ row.room_no }} - {{ row.room_name }}
+          <el-tag v-if="row.is_guest_room === 1" type="success" size="small" style="margin-left: 8px;">客房</el-tag>
         </template>
       </el-table-column>
 

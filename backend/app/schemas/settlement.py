@@ -46,6 +46,7 @@ class SettlementResponse(SettlementBase):
     building_id: Optional[int] = None
     building_no: Optional[str] = None
     room_status: Optional[str] = None
+    is_guest_room: Optional[int] = None
 
     class Config:
         from_attributes = True

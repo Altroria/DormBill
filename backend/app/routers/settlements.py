@@ -40,6 +40,7 @@ def _to_response(s: MonthlySettlement, db: Session) -> SettlementResponse:
         data.room_no = room.room_no
         data.room_name = room.room_name
         data.building_id = room.building_id
+        data.is_guest_room = room.is_guest_room
         if building:
             data.building_no = building.building_no
     # 检查房间状态

@@ -10,6 +10,7 @@ from ..models import (
     MeterRecord, WaterMeterRecord, MonthlySettlement,
 )
 from ..utils.date_utils import parse_date, month_start, add_months
+from ..services.settlement_service import calculate_realtime_settlements
 
 
 router = APIRouter()
@@ -77,15 +78,26 @@ def dashboard(
     total_rooms = room_count
     meter_progress = f"{month_meter_count}/{total_rooms}"
 
-    # 本月结算统计
-    settlements = db.query(MonthlySettlement).filter(
-        MonthlySettlement.month == target_month
-    ).all()
-    total_rent = sum(float(s.rent_actual or 0) for s in settlements)
-    total_electricity = sum(float(s.electricity_fee or 0) for s in settlements)
-    total_ac = sum(float(s.ac_electricity_fee or 0) for s in settlements)
-    total_water = sum(float(s.water_fee or 0) for s in settlements)
-    total_deduction = sum(float(s.total_amount or 0) for s in settlements)
+    # 本月结算统计（实时计算，不依赖已保存的结算记录）
+    try:
+        realtime_settlements = calculate_realtime_settlements(
+            db, target_month, water_mode="double"
+        )
+        total_rent = sum(s["rent_actual"] for s in realtime_settlements)
+        total_electricity = sum(s["electricity_fee"] for s in realtime_settlements)
+        total_ac = sum(s["ac_electricity_fee"] for s in realtime_settlements)
+        total_water = sum(s["water_fee"] for s in realtime_settlements)
+        total_deduction = sum(s["total_amount"] for s in realtime_settlements)
+    except Exception as e:
+        # 计算失败时返回0，避免阻断整个接口
+        import traceback
+        print(f"实时计算结算失败: {e}")
+        print(traceback.format_exc())
+        total_rent = 0
+        total_electricity = 0
+        total_ac = 0
+        total_water = 0
+        total_deduction = 0
 
     # 空闲房间列表（没有当前有效入住记录的房间）
     today = date.today()

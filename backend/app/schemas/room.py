@@ -14,6 +14,7 @@ class RoomBase(BaseModel):
     ac_meter_no: Optional[str] = Field(None, max_length=50)
     electricity_price: Optional[Decimal] = Field(Decimal("0.4900"), max_digits=10, decimal_places=4)
     rent_standard: Optional[Decimal] = Field(Decimal("0.00"), max_digits=10, decimal_places=2)
+    is_guest_room: Optional[int] = Field(0, description="是否为客房（客房水电租全免）")
     remark: Optional[str] = None
 
 
@@ -35,6 +36,7 @@ class RoomUpdate(BaseModel):
     ac_meter_no: Optional[str] = None
     electricity_price: Optional[Decimal] = None
     rent_standard: Optional[Decimal] = None
+    is_guest_room: Optional[int] = None
     remark: Optional[str] = None
 
 
@@ -48,6 +50,7 @@ class RoomResponse(BaseModel):
     ac_meter_no: Optional[str] = None
     electricity_price: Optional[Decimal] = None
     rent_standard: Optional[Decimal] = None
+    is_guest_room: Optional[int] = 0
     status: str = "idle"  # 动态计算的状态: idle=空闲, occupied=已入住
     remark: Optional[str] = None
     created_at: Optional[datetime] = None
