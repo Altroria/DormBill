@@ -84,15 +84,49 @@ def is_in_probation(
     target_month: date,
 ) -> bool:
     """
-    判断员工在 target_month 月是否处于试用期
+    判断员工在 target_month 月是否处于试用期（免租期）
 
     试用期 = [入住日, 入住日 + N个月)
+    例如：6月15日入住，试用期3个月 → 免租期到9月15日（不含）
     """
     if probation_months <= 0:
         return False
     probation_end = add_months(check_in, probation_months)
-    # 月份任意一天处于试用期即视为试用期
+    # 月初任意一天 < 试用期结束日 = 该月至少部分免租
     return month_start(target_month) < probation_end
+
+
+def get_free_rent_days_in_month(
+    check_in: date,
+    probation_months: int,
+    target_month: date,
+) -> int:
+    """
+    计算当月免租天数（严格按天）
+
+    例如：6月15日入住，试用期3个月
+    - 6月：16天免租（15-30日）
+    - 7月：31天免租
+    - 8月：31天免租
+    - 9月：14天免租（1-14日），15-30日需收费
+    """
+    if probation_months <= 0:
+        return 0
+
+    probation_end = add_months(check_in, probation_months)  # 例如：9月15日
+    month_first = month_start(target_month)
+    month_last = month_end(target_month)
+
+    # 入住前或试用期结束后 → 无免租
+    if check_in > month_last or probation_end <= month_first:
+        return 0
+
+    # 计算本月免租区间
+    free_start = max(check_in, month_first)
+    free_end = min(probation_end - timedelta(days=1), month_last)
+
+    days = (free_end - free_start).days + 1
+    return max(0, days)
 
 
 def half_month_rule_valid(
@@ -121,6 +155,7 @@ __all__ = [
     "stay_days_in_month",
     "add_months",
     "is_in_probation",
+    "get_free_rent_days_in_month",
     "half_month_rule_valid",
     "format_month",
 ]

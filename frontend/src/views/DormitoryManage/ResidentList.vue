@@ -111,9 +111,15 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="试用期" width="80" align="center">
+      <el-table-column label="免租期" width="100" align="center">
         <template #default="{ row }">
-          {{ row.probation_months }}个月
+          <el-tag v-if="row.probation_months === 3" type="success" size="small">
+            前3月免租
+          </el-tag>
+          <el-tag v-else-if="row.probation_months === 6" type="warning" size="small">
+            前6月免租
+          </el-tag>
+          <span v-else>-</span>
         </template>
       </el-table-column>
 
@@ -225,12 +231,13 @@
           />
         </el-form-item>
 
-        <el-form-item label="试用期">
-          <el-select v-model="form.probation_months" style="width: 100%">
-            <el-option label="无试用期" :value="0" />
-            <el-option label="3个月" :value="3" />
-            <el-option label="6个月" :value="6" />
-          </el-select>
+        <el-form-item label="前3个月免租">
+          <el-checkbox v-model="form.free_rent_enabled">
+            勾选后前3个月免房租（严格按天计算）
+          </el-checkbox>
+          <div style="font-size: 12px; color: #909399; margin-top: 4px;">
+            例如：6月15日入住，9月15日前免费，9月只收15-30日房租
+          </div>
         </el-form-item>
 
         <el-form-item label="主要缴费人">
@@ -417,6 +424,7 @@ const form = reactive({
   room_id: undefined as number | undefined,
   check_in_date: '',
   probation_months: 0,
+  free_rent_enabled: false,
   is_primary: false,
   status: 'valid' as 'valid' | 'business_trip' | 'leave',
   remark: ''
@@ -598,6 +606,7 @@ const handleEdit = async (row: ResidenceRecord) => {
     room_id: row.room_id,
     check_in_date: row.check_in_date,
     probation_months: row.probation_months,
+    free_rent_enabled: row.probation_months === 3,
     is_primary: row.is_primary_payer === 1,
     status: row.status,
     remark: row.remark || ''
@@ -612,11 +621,20 @@ const handleSubmit = async () => {
     if (valid) {
       submitting.value = true
       try {
+        const submitData = {
+          employee_id: form.employee_id,
+          room_id: form.room_id,
+          check_in_date: form.check_in_date,
+          probation_months: form.free_rent_enabled ? 3 : 0,
+          is_primary_payer: form.is_primary ? 1 : 0,
+          status: form.status,
+          remark: form.remark || ''
+        }
         if (isEdit.value && form.id) {
-          await residenceApi.update(form.id, form)
+          await residenceApi.update(form.id, submitData)
           ElMessage.success('更新成功')
         } else {
-          await residenceApi.create(form)
+          await residenceApi.create(submitData)
           ElMessage.success('创建成功')
         }
         dialogVisible.value = false
@@ -728,6 +746,7 @@ const resetForm = () => {
     room_id: undefined,
     check_in_date: '',
     probation_months: 0,
+    free_rent_enabled: false,
     is_primary: false,
     status: 'valid',
     remark: ''

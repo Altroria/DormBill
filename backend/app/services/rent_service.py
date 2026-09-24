@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from ..models import ResidenceRecord
 from ..utils.date_utils import (
     month_start, month_end, days_in_month, stay_days_in_month,
-    is_in_probation,
+    is_in_probation, get_free_rent_days_in_month,
 )
 from ..utils.decimal_utils import to_decimal, round_money
 
@@ -47,21 +47,22 @@ def calculate_rent_actual(
     target_month: date,
 ) -> Decimal:
     """
-    计算实扣房租
+    计算实扣房租（支持按天免租）
 
-    公式：rent_standard × 入住天数 ÷ 当月总天数
-    试用期 → 实扣 = 0
+    公式：rent_standard × (入住天数 - 免租天数) ÷ 当月总天数
     """
-    # 试用期判断
-    if is_in_probation(check_in, probation_months, target_month):
+    stay_days = stay_days_in_month(check_in, check_out, target_month)
+    free_days = get_free_rent_days_in_month(check_in, probation_months, target_month)
+    
+    chargeable_days = stay_days - free_days
+    if chargeable_days <= 0:
         return Decimal("0.00")
-
-    days = stay_days_in_month(check_in, check_out, target_month)
+    
     total_days = days_in_month(target_month)
     if total_days == 0:
         return Decimal("0.00")
 
-    prorate = Decimal(days) / Decimal(total_days)
+    prorate = Decimal(chargeable_days) / Decimal(total_days)
     return round_money(to_decimal(rent_standard) * prorate)
 
 
@@ -73,9 +74,16 @@ def calculate_rent_actual_with_overrides(
 ) -> Decimal:
     """
     计算实扣房租（支持覆盖值）
+    
+    规则：非主缴费人（配偶）房租为 0
     """
     if override_actual is not None:
         return to_decimal(override_actual)
+    
+    # 非主缴费人（配偶）不承担房租
+    if res.is_primary_payer != 1:
+        return Decimal("0.00")
+    
     return calculate_rent_actual(
         rent_standard,
         res.check_in_date,

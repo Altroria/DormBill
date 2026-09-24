@@ -72,7 +72,7 @@ def distribute_electricity_fee(
     返回 [(employee_id, personal_electricity_fee, personal_ac_fee), ...]
 
     规则：
-    - 夫妻间：只有主要缴费人承担全部水电费
+    - 夫妻间：主缴费人承担全部空调电费，普通电费两人平摊
     - 出差：电费=0
     - 处理尾差（最后一人承担）
     """
@@ -89,18 +89,24 @@ def distribute_electricity_fee(
     primary = [r for r in occupants if r.is_primary_payer == 1]
     others = [r for r in occupants if r.is_primary_payer != 1]
 
-    # 如果有主要缴费人（夫妻间），他承担全部
+    # 如果有主要缴费人（夫妻间）
     if primary:
-        # 主要缴费人承担全部
         results = []
+        # 普通电费：所有人（包括主缴费人和配偶）平摊
+        n = len(occupants)
+        elec_alloc = allocate_with_remainder(total_fee, n)
+        
+        # 主缴费人：承担空调电费 + 分摊的普通电费
         results.append((
             primary[0].employee_id,
-            round_money(total_fee),
+            elec_alloc[0],
             round_money(ac_fee),
         ))
-        # 其他人不分摊水电费（但房租仍正常）
-        for r in others:
-            results.append((r.employee_id, Decimal("0.00"), Decimal("0.00")))
+        
+        # 非主缴费人（配偶）：只承担分摊的普通电费，空调电费=0
+        for i, r in enumerate(others, start=1):
+            results.append((r.employee_id, elec_alloc[i], Decimal("0.00")))
+        
         return results
 
     # 普通情况：所有人平均分摊，处理尾差

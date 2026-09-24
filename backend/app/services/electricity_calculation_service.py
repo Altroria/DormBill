@@ -98,17 +98,25 @@ class ElectricityCalculationService:
             if ac_meter:
                 # 获取该套间的入住人数
                 room_occupants = [o for o in occupants if o.room_id == room_id]
-                room_occupants_count = len(room_occupants)
                 
-                # 套间空调费用分摊
-                ac_fee_allocations = allocate_with_remainder(
-                    to_decimal(ac_meter.ac_fee),
-                    room_occupants_count
-                )
+                # 检查是否有主缴费人
+                primary_payers = [o for o in room_occupants if o.is_primary_payer == 1]
                 
-                # 找到当前人员在该套间中的索引
-                room_idx = room_occupants.index(occupant)
-                personal_ac_fee = ac_fee_allocations[room_idx]
+                if primary_payers:
+                    # 夫妻间：只有主缴费人承担空调费
+                    if occupant.is_primary_payer == 1:
+                        personal_ac_fee = to_decimal(ac_meter.ac_fee)
+                    else:
+                        personal_ac_fee = Decimal("0")
+                else:
+                    # 普通情况：按套间人数分摊空调费
+                    room_occupants_count = len(room_occupants)
+                    ac_fee_allocations = allocate_with_remainder(
+                        to_decimal(ac_meter.ac_fee),
+                        room_occupants_count
+                    )
+                    room_idx = room_occupants.index(occupant)
+                    personal_ac_fee = ac_fee_allocations[room_idx]
             else:
                 personal_ac_fee = Decimal("0")
             

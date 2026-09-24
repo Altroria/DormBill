@@ -399,6 +399,12 @@ def calculate_realtime_settlements(
             deduction_plus=deduction_plus,
         )
         
+        # 计算免租天数和计费天数
+        from ..utils.date_utils import get_free_rent_days_in_month, add_months
+        free_rent_days = get_free_rent_days_in_month(res.check_in_date, res.probation_months, target_month)
+        chargeable_days = days - free_rent_days
+        probation_end_date = add_months(res.check_in_date, res.probation_months) if res.probation_months > 0 else None
+        
         results.append({
             "id": existing.id if existing else 0,
             "month": target_month,
@@ -416,6 +422,9 @@ def calculate_realtime_settlements(
             "rent_should": float(rent_standard),
             "rent_actual": float(rent_actual),
             "stay_days": days,
+            "free_rent_days": free_rent_days,
+            "chargeable_days": chargeable_days,
+            "probation_end": probation_end_date.isoformat() if probation_end_date else None,
             "electricity_fee": float(elec_fee),
             "ac_electricity_fee": float(ac_fee),
             "water_fee": float(water_fee),

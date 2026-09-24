@@ -12,6 +12,9 @@ class SettlementBase(BaseModel):
     rent_should: Decimal = Decimal("0")
     rent_actual: Decimal = Decimal("0")
     stay_days: int = 0
+    free_rent_days: int = 0
+    chargeable_days: int = 0
+    probation_end: Optional[date] = None
     electricity_fee: Decimal = Decimal("0")
     ac_electricity_fee: Decimal = Decimal("0")
     water_fee: Decimal = Decimal("0")

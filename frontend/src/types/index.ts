@@ -149,6 +149,9 @@ export interface MonthlySettlement {
   rent_should: number;
   rent_actual: number;
   stay_days: number;
+  free_rent_days: number;
+  chargeable_days: number;
+  probation_end?: string;
   electricity_fee: number;
   ac_electricity_fee: number;
   water_fee: number;

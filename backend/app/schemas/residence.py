@@ -20,6 +20,9 @@ class ResidenceCreate(ResidenceBase):
 
 
 class ResidenceUpdate(BaseModel):
+    employee_id: Optional[int] = None
+    room_id: Optional[int] = None
+    check_in_date: Optional[date] = None
     check_out_date: Optional[date] = None
     is_primary_payer: Optional[int] = None
     probation_months: Optional[int] = None

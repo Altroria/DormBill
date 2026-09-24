@@ -173,9 +173,17 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="入住天数" width="90" align="center">
+      <el-table-column label="入住/免租/计费天数" width="160" align="center">
         <template #default="{ row }">
-          {{ row.stay_days }}
+          <div style="font-size: 12px; line-height: 1.6;">
+            <div>入住：{{ row.stay_days }}天</div>
+            <div v-if="row.free_rent_days > 0" style="color: #67C23A;">
+              免租：{{ row.free_rent_days }}天
+            </div>
+            <div style="color: #E6A23C; font-weight: 600;">
+              计费：{{ row.chargeable_days ?? row.stay_days }}天
+            </div>
+          </div>
         </template>
       </el-table-column>
 
