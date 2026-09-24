@@ -1,7 +1,13 @@
 """FastAPI 应用入口"""
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import traceback
+import logging
+
+# 配置日志
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 from .config import settings
 from .database import init_db
@@ -31,6 +37,18 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # 全局异常处理器
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        logger.error(f"请求异常: {request.url}")
+        logger.error(f"异常类型: {type(exc).__name__}")
+        logger.error(f"异常信息: {str(exc)}")
+        logger.error(f"异常堆栈:\n{traceback.format_exc()}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(exc), "type": type(exc).__name__}
+        )
 
     # 注册路由
     app.include_router(dashboard.router, prefix="/api", tags=["首页"])
