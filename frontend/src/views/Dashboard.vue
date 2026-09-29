@@ -316,6 +316,7 @@ async function loadAllEmployees() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function searchEmployees(_query: string) {
   if (!_query) {
     loadAllEmployees();
