@@ -329,8 +329,9 @@ async def import_personnel_data(
                     )
                 ).first()
                 
-                # 判断是否为主缴费人（检测"夫妻间"关键词）
-                is_primary = 1 if remark and '夫妻间' in remark else 0
+                # 判断是否为主缴费人
+                # 默认所有人都是主缴费人(1)，只有备注明确标注"配偶"或"夫妻间副"才设为非主缴费人(0)
+                is_primary = 0 if remark and ('配偶' in remark or '夫妻间副' in remark) else 1
                 
                 if existing:
                     if mode == 'add_only':
