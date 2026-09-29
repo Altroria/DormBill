@@ -323,7 +323,7 @@ async function searchEmployees(_query: string) {
   }
   employeeSearching.value = true;
   try {
-    const res = await employeeApi.list({ keyword: query });
+    const res = await employeeApi.list({ keyword: _query });
     employees.value = res.items || res;
   } catch (error) {
     ElMessage.error('搜索员工失败');
@@ -345,7 +345,7 @@ async function handleCheckInSubmit() {
           check_out_date: undefined,
           probation_months: checkInForm.value.free_rent_enabled ? 3 : 0,
           is_primary_payer: checkInForm.value.is_primary ? 1 : 0,
-          status: 'valid',
+          status: 'valid' as 'valid',
           remark: checkInForm.value.remark || ''
         };
         await residenceApi.create(submitData);
