@@ -51,6 +51,11 @@
             <el-icon><Coin /></el-icon>
             <span>结算管理</span>
           </el-menu-item>
+          
+          <el-menu-item index="/import">
+            <el-icon><Upload /></el-icon>
+            <span>数据导入</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
       

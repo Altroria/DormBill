@@ -4,8 +4,11 @@ import { ElMessage } from 'element-plus';
 /**
  * 创建 axios 实例
  */
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+console.log('API baseURL:', baseURL);
+
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+  baseURL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -19,6 +22,7 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // 添加认证头
     config.headers.appkey = 'test-auth-key';
+    console.log('发送请求:', config.method?.toUpperCase(), config.url, config.baseURL);
     return config;
   },
   (error) => Promise.reject(error)

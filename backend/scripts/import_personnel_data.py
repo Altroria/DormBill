@@ -1,131 +1,19 @@
-"""Excel 导入 API"""
-from io import BytesIO
-from fastapi import APIRouter, Depends, UploadFile, File, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from datetime import date
+"""
+从房间和人员Excel导入/更新数据
+支持直接覆盖更新房间、人员、入住信息
+"""
+import sys
+from pathlib import Path
+
+# 添加项目根目录到路径
+backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
+
 import xlrd
-import tempfile
-import os
-
-from ..database import get_db
-from ..models import Employee, Room, Building, ResidenceRecord
-from ..services.excel_service import (
-    import_employees_from_excel, import_rooms_from_excel,
-    import_residences_from_excel,
-)
-from ..utils.exceptions import ValidationError
-
-
-router = APIRouter()
-
-
-@router.post("/employees")
-async def import_employees(
-    file: UploadFile = File(...), db: Session = Depends(get_db),
-):
-    """导入员工 Excel"""
-    content = await file.read()
-    bio = BytesIO(content)
-    result = import_employees_from_excel(bio)
-    created = 0
-    for row in result["rows"]:
-        existing = db.query(Employee).filter(
-            and_(
-                Employee.employee_no == row["employee_no"],
-                Employee.deleted_at.is_(None),
-            )
-        ).first()
-        if existing:
-            continue
-        emp = Employee(**row)
-        db.add(emp)
-        created += 1
-    db.commit()
-    return {
-        "message": "ok",
-        "total": len(result["rows"]),
-        "created": created,
-        "errors": result.get("errors", []),
-    }
-
-
-@router.post("/rooms")
-async def import_rooms(
-    file: UploadFile = File(...), db: Session = Depends(get_db),
-):
-    """导入房间 Excel"""
-    content = await file.read()
-    bio = BytesIO(content)
-    result = import_rooms_from_excel(bio)
-    building_cache = {}
-    created = 0
-    for row in result["rows"]:
-        bno = row.pop("building_no")
-        # 楼栋：不存在则创建
-        if bno not in building_cache:
-            b = db.query(Building).filter(
-                and_(Building.building_no == bno, Building.deleted_at.is_(None))
-            ).first()
-            if not b:
-                b = Building(building_no=bno, name=f"{bno}栋", status="active")
-                db.add(b)
-                db.flush()
-            building_cache[bno] = b.id
-        building_id = building_cache[bno]
-
-        existing = db.query(Room).filter(
-            and_(
-                Room.building_id == building_id,
-                Room.room_no == row["room_no"],
-                Room.room_name == row["room_name"],
-                Room.deleted_at.is_(None),
-            )
-        ).first()
-        if existing:
-            continue
-        room = Room(building_id=building_id, **row)
-        db.add(room)
-        created += 1
-    db.commit()
-    return {
-        "message": "ok",
-        "total": len(result["rows"]),
-        "created": created,
-        "errors": result.get("errors", []),
-    }
-
-
-@router.post("/residences")
-async def import_residences(
-    file: UploadFile = File(...), db: Session = Depends(get_db),
-):
-    """批量导入入住记录"""
-    content = await file.read()
-    bio = BytesIO(content)
-    result = import_residences_from_excel(bio)
-    created = 0
-    for row in result["rows"]:
-        # 检查重复
-        existing = db.query(ResidenceRecord).filter(
-            and_(
-                ResidenceRecord.employee_id == row["employee_id"],
-                ResidenceRecord.status != "invalid",
-                ResidenceRecord.check_out_date.is_(None),
-            )
-        ).first()
-        if existing:
-            continue
-        res = ResidenceRecord(**row)
-        db.add(res)
-        created += 1
-    db.commit()
-    return {
-        "message": "ok",
-        "total": len(result["rows"]),
-        "created": created,
-        "errors": result.get("errors", []),
-    }
+from datetime import date
+from sqlalchemy import and_
+from app.database import SessionLocal
+from app.models import Building, Room, Employee, ResidenceRecord
 
 
 def parse_building_and_room(building_str, room_str):
@@ -146,40 +34,32 @@ def parse_building_and_room(building_str, room_str):
     return building_no, room_no
 
 
-@router.post("/personnel")
-async def import_personnel_data(
-    file: UploadFile = File(...),
-    mode: str = Query("update", pattern="^(update|override|add_only)$"),
-    db: Session = Depends(get_db),
-):
+def import_personnel_data(file_path, mode='update'):
     """
-    导入房间和人员综合数据（从Excel一次性导入楼栋、房间、员工、入住信息）
+    导入房间和人员数据
     
-    mode参数:
-    - update: 更新模式（默认），已存在则更新，不存在则创建
-    - override: 覆盖模式，先清空所有入住记录，再重新导入
-    - add_only: 仅添加模式，跳过已存在的记录
-    
-    Excel格式要求:
-    第1行为表头，包含: 楼号 | 房号 | 室号 | 房间 | 任职单位 | 一级部门 | 职务 | 姓名 | 转宿日期，备注
+    Args:
+        file_path: Excel文件路径
+        mode: 导入模式
+            - 'update': 更新模式（默认），已存在则更新，不存在则创建
+            - 'override': 覆盖模式，先清空所有入住记录，再重新导入
+            - 'add_only': 仅添加模式，跳过已存在的记录
     """
-    # 保存上传的文件到临时位置
-    content = await file.read()
+    print(f"开始导入数据，模式: {mode}")
+    print("=" * 80)
     
-    # 写入临时文件
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.xls') as tmp:
-        tmp.write(content)
-        tmp_path = tmp.name
+    wb = xlrd.open_workbook(file_path)
+    ws = wb.sheet_by_index(0)
+    
+    db = SessionLocal()
     
     try:
-        # 读取Excel
-        wb = xlrd.open_workbook(tmp_path)
-        ws = wb.sheet_by_index(0)
-        
         # 如果是覆盖模式，先清空入住记录
         if mode == 'override':
+            print("\n清空现有入住记录...")
             deleted_count = db.query(ResidenceRecord).delete()
             db.commit()
+            print(f"已删除 {deleted_count} 条入住记录")
         
         # 缓存
         building_cache = {}
@@ -200,7 +80,11 @@ async def import_personnel_data(
             'errors': []
         }
         
-        # 跳过表头（第0行）
+        headers = ws.row_values(0)
+        print(f"\n表头: {headers}")
+        print(f"\n总行数: {ws.nrows - 1}")
+        print("\n开始处理数据...\n")
+        
         for row_idx in range(1, ws.nrows):
             row = ws.row_values(row_idx)
             
@@ -217,7 +101,7 @@ async def import_personnel_data(
                 remark = str(row[8]).strip() if len(row) > 8 and row[8] else None
                 
                 if not building_raw or not room_raw or not name:
-                    stats['errors'].append({"row": row_idx + 1, "msg": "楼栋/房号/姓名为空"})
+                    stats['errors'].append(f"第{row_idx + 1}行: 楼栋/房号/姓名为空")
                     continue
                 
                 building_no, room_no = parse_building_and_room(building_raw, room_raw)
@@ -241,6 +125,7 @@ async def import_personnel_data(
                         db.add(building)
                         db.flush()
                         stats['buildings_created'] += 1
+                        print(f"✓ 创建楼栋: {building_no}")
                     else:
                         stats['buildings_updated'] += 1
                     
@@ -273,6 +158,7 @@ async def import_personnel_data(
                         db.add(room)
                         db.flush()
                         stats['rooms_created'] += 1
+                        print(f"✓ 创建房间: {building_no}-{room_no}-{room_unit} ({room_name})")
                     else:
                         # 更新房间名称
                         if room_name and room.room_name != room_name:
@@ -306,6 +192,7 @@ async def import_personnel_data(
                         db.add(employee)
                         db.flush()
                         stats['employees_created'] += 1
+                        print(f"✓ 创建员工: {name} ({company or ''}/{department or ''})")
                     else:
                         # 更新员工信息
                         if company and employee.company != company:
@@ -321,6 +208,7 @@ async def import_personnel_data(
                 employee_id = employee_cache[name]
                 
                 # 4. 处理入住记录
+                # 检查是否已有有效入住记录
                 existing = db.query(ResidenceRecord).filter(
                     and_(
                         ResidenceRecord.employee_id == employee_id,
@@ -354,28 +242,66 @@ async def import_personnel_data(
                     )
                     db.add(residence)
                     stats['residences_created'] += 1
+                    print(f"✓ 创建入住: {name} -> {building_no}-{room_no}-{room_unit}")
                 
                 # 每处理50行提交一次
                 if row_idx % 50 == 0:
                     db.commit()
+                    print(f"\n已处理 {row_idx}/{ws.nrows - 1} 行\n")
             
             except Exception as e:
-                stats['errors'].append({"row": row_idx + 1, "msg": str(e)})
+                stats['errors'].append(f"第{row_idx + 1}行错误: {str(e)}")
+                print(f"✗ 第{row_idx + 1}行错误: {str(e)}")
                 continue
         
         # 最终提交
         db.commit()
         
-        return {
-            "message": "ok",
-            "mode": mode,
-            "stats": stats
-        }
+        # 打印统计
+        print("\n" + "=" * 80)
+        print("导入完成！统计信息：")
+        print("=" * 80)
+        print(f"楼栋: 新建 {stats['buildings_created']}, 更新 {stats['buildings_updated']}")
+        print(f"房间: 新建 {stats['rooms_created']}, 更新 {stats['rooms_updated']}")
+        print(f"员工: 新建 {stats['employees_created']}, 更新 {stats['employees_updated']}")
+        print(f"入住: 新建 {stats['residences_created']}, 更新 {stats['residences_updated']}, 跳过 {stats['residences_skipped']}")
+        
+        if stats['errors']:
+            print(f"\n错误 {len(stats['errors'])} 条:")
+            for err in stats['errors'][:10]:  # 只显示前10条
+                print(f"  - {err}")
+            if len(stats['errors']) > 10:
+                print(f"  ... 还有 {len(stats['errors']) - 10} 条错误")
+        
+        return stats
     
     except Exception as e:
         db.rollback()
-        raise ValidationError(f"导入失败: {str(e)}")
+        print(f"\n导入失败: {str(e)}")
+        raise
     finally:
-        # 删除临时文件
-        if os.path.exists(tmp_path):
-            os.unlink(tmp_path)
+        db.close()
+
+
+if __name__ == "__main__":
+    import sys
+    
+    file_path = Path(__file__).parent.parent.parent / "data" / "房间和人员-最新.xls"
+    
+    # 从命令行参数获取模式
+    mode = sys.argv[1] if len(sys.argv) > 1 else 'update'
+    
+    if mode not in ['update', 'override', 'add_only']:
+        print("错误: 模式必须是 update, override 或 add_only")
+        sys.exit(1)
+    
+    print(f"文件路径: {file_path}")
+    print(f"导入模式: {mode}")
+    print("\n确认导入？(y/n): ", end='')
+    
+    confirm = input().strip().lower()
+    if confirm != 'y':
+        print("已取消")
+        sys.exit(0)
+    
+    import_personnel_data(file_path, mode)

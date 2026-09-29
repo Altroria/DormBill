@@ -89,6 +89,15 @@ const routes: RouteRecordRaw[] = [
       icon: 'Coin',
     },
   },
+  {
+    path: '/import',
+    name: 'DataImport',
+    component: () => import('@/views/DataImport.vue'),
+    meta: {
+      title: '数据导入',
+      icon: 'Upload',
+    },
+  },
 ];
 
 // 创建路由实例
