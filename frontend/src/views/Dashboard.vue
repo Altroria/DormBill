@@ -316,23 +316,6 @@ async function loadAllEmployees() {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function searchEmployees(_query: string) {
-  if (!_query) {
-    loadAllEmployees();
-    return;
-  }
-  employeeSearching.value = true;
-  try {
-    const res = await employeeApi.list({ keyword: _query });
-    employees.value = res.items || res;
-  } catch (error) {
-    ElMessage.error('搜索员工失败');
-  } finally {
-    employeeSearching.value = false;
-  }
-}
-
 async function handleCheckInSubmit() {
   if (!checkInFormRef.value) return;
   await checkInFormRef.value.validate(async (valid) => {
