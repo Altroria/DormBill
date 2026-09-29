@@ -171,7 +171,7 @@ const form = reactive({
   mode: 'update',
 });
 
-const handleFileChange = (file: UploadFile, files: UploadFiles) => {
+const handleFileChange = (file: UploadFile, _files: UploadFiles) => {
   selectedFile.value = file.raw || null;
   importResult.value = null;
 };
@@ -228,12 +228,12 @@ const handleImport = async () => {
     );
 
     console.log('API 响应:', response);
-    console.log('stats:', response.stats);
+    console.log('stats:', response.data?.stats);
 
     importResult.value = {
       success: true,
-      stats: response.stats,
-      errors: response.stats?.errors || [],
+      stats: response.data?.stats,
+      errors: response.data?.stats?.errors || [],
     };
 
     ElMessage.success('导入成功！');

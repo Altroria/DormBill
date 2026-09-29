@@ -316,8 +316,8 @@ async function loadAllEmployees() {
   }
 }
 
-async function searchEmployees(query: string) {
-  if (!query) {
+async function searchEmployees(_query: string) {
+  if (!_query) {
     loadAllEmployees();
     return;
   }
@@ -342,7 +342,7 @@ async function handleCheckInSubmit() {
           employee_id: checkInForm.value.employee_id,
           room_id: checkInForm.value.room_id,
           check_in_date: checkInForm.value.check_in_date,
-          check_out_date: null,
+          check_out_date: undefined,
           probation_months: checkInForm.value.free_rent_enabled ? 3 : 0,
           is_primary_payer: checkInForm.value.is_primary ? 1 : 0,
           status: 'valid',

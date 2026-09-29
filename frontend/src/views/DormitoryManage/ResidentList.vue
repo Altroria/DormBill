@@ -671,7 +671,7 @@ const handleSubmit = async () => {
           employee_id: form.employee_id,
           room_id: form.room_id,
           check_in_date: form.check_in_date,
-          check_out_date: form.status === 'leave' ? form.check_out_date : null,
+          check_out_date: form.status === 'leave' ? form.check_out_date : undefined,
           probation_months: form.free_rent_enabled ? 3 : 0,
           is_primary_payer: form.is_primary ? 1 : 0,
           status: form.status,
