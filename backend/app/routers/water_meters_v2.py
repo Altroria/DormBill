@@ -2,6 +2,7 @@
 from datetime import date
 from decimal import Decimal
 from typing import Optional, List
+from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -214,7 +215,7 @@ def export_water_template(
             and_(
                 Room.building_id == record.building_id,
                 Room.room_no == record.room_no,
-                Room.status == "active"
+                Room.deleted_at.is_(None)
             )
         ).first()
         
@@ -233,11 +234,12 @@ def export_water_template(
     )
     
     filename = f"水费导入模板_{month}.xlsx"
+    encoded_filename = quote(filename)
     
     return StreamingResponse(
         BytesIO(excel_bytes),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}"}
     )
 
 

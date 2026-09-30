@@ -345,6 +345,7 @@ import { Search, Check, Download, Upload } from '@element-plus/icons-vue'
 import { meterV2Api, type EnhancedMeterListItem, type RoomNoBatchUpdateItem } from '@/api/meter_v2'
 import type { Building } from '@/types'
 import { buildingApi } from '@/api/building'
+import axios from 'axios'
 
 // 数据状态
 const loading = ref(false)
@@ -654,26 +655,41 @@ onMounted(() => {
 })
 
 // 导出模板
-const exportTemplate = () => {
+const exportTemplate = async () => {
   if (!filterForm.month) {
     ElMessage.warning('请选择月份')
     return
   }
 
-  const url = meterV2Api.exportTemplate({
-    month: filterForm.month,
-    building_id: filterForm.buildingId,
-  })
-  
-  // 创建隐藏的下载链接
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `电费导入模板_${filterForm.month}.xlsx`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  
-  ElMessage.success('模板下载成功')
+  try {
+    const params: any = { month: filterForm.month }
+    if (filterForm.buildingId) {
+      params.building_id = filterForm.buildingId
+    }
+
+    const response = await axios.get('/api/meters-v2/export-template', {
+      params,
+      responseType: 'blob'
+    })
+
+    // 创建 Blob URL 并触发下载
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `电费导入模板_${filterForm.month}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    ElMessage.success('模板下载成功')
+  } catch (error: any) {
+    console.error('导出模板失败:', error)
+    ElMessage.error(error.response?.data?.detail || '导出模板失败')
+  }
 }
 
 // 处理文件选择

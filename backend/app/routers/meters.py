@@ -121,7 +121,7 @@ def init_meter_records(
 ):
     """初始化某月的电表记录（带出上月读数）"""
     target_month = month_start(parse_date(month + "-01"))
-    query = db.query(Room).filter(Room.status == "active")
+    query = db.query(Room).filter(Room.deleted_at.is_(None))
     if building_id:
         query = query.filter(Room.building_id == building_id)
     rooms = query.all()

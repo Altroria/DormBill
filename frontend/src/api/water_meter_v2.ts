@@ -94,7 +94,12 @@ export const waterMeterV2Api = {
     month: string
     building_id?: number
   }): string {
-    const queryString = new URLSearchParams(params as any).toString()
+    const filteredParams: Record<string, string> = {}
+    if (params.month) filteredParams.month = params.month
+    if (params.building_id !== undefined && params.building_id !== null) {
+      filteredParams.building_id = String(params.building_id)
+    }
+    const queryString = new URLSearchParams(filteredParams).toString()
     return `/api/water-meters-v2/export-template?${queryString}`
   },
 

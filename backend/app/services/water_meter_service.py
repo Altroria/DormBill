@@ -23,7 +23,7 @@ def init_water_meters_for_month(
     target_month = month_start(target_month)
     
     # 查询房间
-    query = db.query(Room).filter(Room.status == "active")
+    query = db.query(Room).filter(Room.deleted_at.is_(None))
     if building_id:
         query = query.filter(Room.building_id == building_id)
     rooms = query.all()

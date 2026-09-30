@@ -37,7 +37,7 @@ def precheck_settlement(
 
     # 检查所有员工是否都有当月入住
     employees = db.query(Employee).filter(Employee.status == "active").all()
-    rooms = db.query(Room).filter(Room.status == "active").all()
+    rooms = db.query(Room).filter(Room.deleted_at.is_(None)).all()
 
     active_room_ids = [r.id for r in rooms]
 

@@ -290,7 +290,7 @@ class ElectricityCalculationService:
                 and_(
                     Room.building_id == building_id,
                     Room.room_no == room_no,
-                    Room.status == "active",
+                    Room.deleted_at.is_(None),
                 )
             )
             .all()

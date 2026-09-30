@@ -123,7 +123,7 @@ def init_all_room_main_meters_for_month(
 ) -> int:
     """初始化某月所有房号的总电表记录"""
     # 获取所有房号（去重）
-    query = db.query(Room.building_id, Room.room_no).filter(Room.status == "active")
+    query = db.query(Room.building_id, Room.room_no).filter(Room.deleted_at.is_(None))
     if building_id:
         query = query.filter(Room.building_id == building_id)
     

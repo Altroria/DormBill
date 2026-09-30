@@ -2,6 +2,7 @@
 from datetime import date
 from decimal import Decimal
 from typing import Optional
+from urllib.parse import quote
 from fastapi import APIRouter, Depends, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -511,7 +512,7 @@ def export_electricity_template(
             and_(
                 Room.building_id == main_meter.building_id,
                 Room.room_no == main_meter.room_no,
-                Room.status == "active"
+                Room.deleted_at.is_(None)
             )
         ).all()
         
@@ -550,11 +551,12 @@ def export_electricity_template(
     )
     
     filename = f"电费导入模板_{month}.xlsx"
+    encoded_filename = quote(filename)
     
     return StreamingResponse(
         BytesIO(excel_bytes),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}"}
     )
 
 

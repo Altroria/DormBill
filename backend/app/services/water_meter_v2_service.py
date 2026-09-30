@@ -46,7 +46,6 @@ class WaterMeterV2Service:
             )
             .filter(
                 Room.deleted_at.is_(None),
-                Room.status == "active",
             )
             .group_by(Room.building_id, Room.room_no)
         )
